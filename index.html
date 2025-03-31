@@ -1,542 +1,489 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Mech Combat</title>
-  <style>
-    /* Fullscreen canvas and a simple HUD */
-    body { margin: 0; overflow: hidden; background: #000; color: #fff; font-family: monospace; }
-    canvas { display: block; }
-    #hud {
-      position: absolute; top: 10px; left: 10px;
-      font-size: 20px;
-      z-index: 10;
-      pointer-events: none;
-    }
-    #message {
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 32px;
-      text-align: center;
-      z-index: 20;
-      display: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherNET 95</title>
+    
+    <style>
+        /* --- Basic Setup and Body --- */
+        body {
+            background-color: #008080; /* Classic Teal Background */
+            font-family: 'Tahoma', 'MS Sans Serif', 'Arial', sans-serif;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* --- Initial Connect Button Container --- */
+        #connect-container {
+            text-align: center;
+            background-color: #C0C0C0;
+            padding: 20px;
+            border: 2px solid;
+            border-color: #ffffff #808080 #808080 #ffffff;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- Win95 Style Button --- */
+        .win95-button {
+            background-color: #C0C0C0;
+            border: 1px solid;
+            border-color: #ffffff #808080 #808080 #ffffff; /* Raised */
+            box-shadow: 1px 1px 1px #404040;
+            padding: 5px 15px;
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+            min-width: 75px; /* Standard button width */
+            min-height: 23px; /* Standard button height */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .win95-button:active {
+            border-color: #808080 #ffffff #ffffff #808080; /* Sunken */
+            box-shadow: none;
+            padding: 6px 14px 4px 16px; /* Shift text slightly */
+        }
+        .win95-button:focus {
+            outline: 1px dotted #000000;
+            outline-offset: -3px;
+        }
+
+        /* --- Main Window Styling (Initially Hidden) --- */
+        #win95-window {
+            width: 90%;
+            max-width: 480px; /* Slightly wider */
+            min-width: 320px;
+            background-color: #C0C0C0;
+            border: 2px solid;
+            border-color: #ffffff #808080 #808080 #ffffff;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            padding: 3px;
+            display: flex;
+            flex-direction: column;
+            /* Hidden initially, shown after connect */
+            display: none;
+        }
+
+        /* --- Title Bar --- */
+        .title-bar {
+            background: linear-gradient(to right, #000080, #1084d0);
+            color: white;
+            padding: 3px 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 20px;
+            margin-bottom: 3px;
+            flex-shrink: 0;
+            cursor: default; /* Usually draggable, but not here */
+        }
+
+        .title-bar-text {
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex; /* Align icon and text */
+            align-items: center;
+        }
+
+        .title-icon {
+             width: 16px;
+             height: 16px;
+             margin-right: 4px;
+        }
+
+
+        /* --- Window Control Buttons (Visual Only) --- */
+        .title-bar-controls {
+             flex-shrink: 0;
+        }
+        .title-bar-controls button {
+            width: 16px;
+            height: 16px;
+            margin-left: 2px;
+            background-color: #C0C0C0;
+            border: 1px solid;
+            border-color: #ffffff #808080 #808080 #ffffff;
+            box-shadow: 1px 1px 1px #404040;
+            font-family: 'Marlett', 'System', sans-serif;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 0;
+            line-height: 14px;
+            color: black;
+            cursor: default;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .title-bar-controls button:active {
+             border-color: #808080 #ffffff #ffffff #808080;
+             box-shadow: none;
+        }
+
+        /* --- Window Body --- */
+        .window-body {
+            background-color: #C0C0C0;
+            padding: 10px;
+            min-height: 250px; /* Increased height */
+            border: 1px solid;
+            border-color: #808080 #ffffff #ffffff #808080;
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        /* --- Connection Status Panel --- */
+        #connection-status {
+            border: 2px inset #ffffff;
+            background-color: #C0C0C0;
+            padding: 10px;
+            margin-bottom: 10px;
+            min-height: 120px; /* Increased height */
+            max-height: 180px;
+            overflow-y: auto;
+            font-family: 'Lucida Console', 'Courier New', monospace;
+            font-size: 11px;
+            line-height: 1.4; /* Spacing */
+            display: flex; /* Use flex for icon alignment */
+            align-items: flex-start; /* Align icon top */
+        }
+        #connection-status-text {
+            flex-grow: 1; /* Text takes remaining space */
+        }
+        #connection-status p {
+            margin: 2px 0;
+        }
+        .connection-icon {
+            width: 32px;
+            height: 32px;
+            margin-right: 10px;
+            flex-shrink: 0;
+            /* Simple Globe/Modem Icon */
+            fill: #000080;
+        }
+
+
+        /* --- Weather Display Area --- */
+        #weather-display {
+            /* Styles remain similar */
+        }
+        #weather-display h2 {
+            margin-top: 0;
+            font-size: 14px;
+            border-bottom: 1px dotted #808080;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .weather-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+        }
+        #weather-display p {
+            margin: 8px 0;
+        }
+
+        /* --- Status Bar --- */
+        .status-bar {
+          border: 1px solid;
+          border-color: #808080 #ffffff #ffffff #808080;
+          padding: 2px 4px;
+          display: flex;
+          margin-top: 10px;
+          background-color: #C0C0C0;
+        }
+        .main-status {
+            position: absolute;
+            bottom: 3px;
+            left: 3px;
+            right: 3px;
+            margin-top: 0;
+            height: 20px;
+            box-sizing: border-box;
+        }
+        .status-bar-field {
+          flex: 1;
+          margin: 0 2px;
+          padding: 0 4px;
+          border-right: 1px solid #808080;
+          border-bottom: 1px solid #808080;
+          border-left: 1px solid #ffffff;
+          border-top: 1px solid #ffffff;
+          font-size: 11px;
+          line-height: 16px;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          min-width: 50px;
+        }
+        .status-bar-field:last-child {
+            border-right: none;
+        }
+
+        /* --- Notice Styling --- */
+        .notice {
+            font-size: 10px;
+            color: #404040;
+            margin-top: 15px;
+            text-align: center;
+        }
+        .error-notice {
+             color: #8B0000; /* Dark Red for errors */
+             font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-  <div id="hud">Score: 0</div>
-  <div id="message">Press ENTER to Start</div>
-  <canvas id="glCanvas"></canvas>
-  <script>
-  "use strict";
-  /* ========= Setup WebGL ========= */
-  const canvas = document.getElementById("glCanvas");
-  const hud = document.getElementById("hud");
-  const message = document.getElementById("message");
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-  if (!gl) {
-    alert("Your browser does not support WebGL");
-  }
-  gl.enable(gl.DEPTH_TEST);
 
-  /* ========= Shader Sources ========= */
-  const vsSource = `
-    attribute vec3 aPosition;
-    attribute vec3 aNormal;
-    uniform mat4 uModel;
-    uniform mat4 uView;
-    uniform mat4 uProjection;
-    varying vec3 vNormal;
-    varying vec3 vFragPos;
-    void main(void) {
-      vec4 worldPos = uModel * vec4(aPosition, 1.0);
-      vFragPos = worldPos.xyz;
-      // Assuming uniform scaling only; otherwise a proper normalMatrix is required.
-      vNormal = mat3(uModel) * aNormal;
-      gl_Position = uProjection * uView * worldPos;
-    }
-  `;
+    <div id="connect-container">
+        <p>Click Connect to access WeatherNET 95</p>
+        <button id="connect-button" class="win95-button">Connect</button>
+    </div>
 
-  const fsSource = `
-    precision mediump float;
-    varying vec3 vNormal;
-    varying vec3 vFragPos;
-    uniform vec3 uColor;
-    uniform vec3 uLightDir;
-    void main(void) {
-      vec3 normal = normalize(vNormal);
-      float diff = max(dot(normal, normalize(uLightDir)), 0.0);
-      vec3 ambient = 0.2 * uColor;
-      vec3 diffuse = 0.8 * diff * uColor;
-      gl_FragColor = vec4(ambient + diffuse, 1.0);
-    }
-  `;
+    
+    <div id="win95-window">
+        <div class="title-bar">
+             <div class="title-bar-text">
+                 <svg class="title-icon" id="window-title-icon" viewBox="0 0 24 24" fill="#C0C0C0" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
+                 <span id="window-title-text">WeatherNET 95 - Idle</span>
+             </div>
+            <div class="title-bar-controls">
+                <button aria-label="Minimize" disabled>_</button>
+                <button aria-label="Maximize" disabled>&#9633;</button>
+                <button aria-label="Close" disabled>X</button>
+            </div>
+        </div>
 
-  /* ========= Shader Compilation and Program Linking ========= */
-  function compileShader(source, type) {
-    const shader = gl.createShader(type);
-    gl.shaderSource(shader, source);
-    gl.compileShader(shader);
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      console.error("Shader compile error:", gl.getShaderInfoLog(shader));
-      gl.deleteShader(shader);
-      return null;
-    }
-    return shader;
-  }
-  const vertexShader = compileShader(vsSource, gl.VERTEX_SHADER);
-  const fragmentShader = compileShader(fsSource, gl.FRAGMENT_SHADER);
-  const shaderProgram = gl.createProgram();
-  gl.attachShader(shaderProgram, vertexShader);
-  gl.attachShader(shaderProgram, fragmentShader);
-  gl.linkProgram(shaderProgram);
-  if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-    console.error("Shader program failed to link:", gl.getProgramInfoLog(shaderProgram));
-  }
-  gl.useProgram(shaderProgram);
+        <div class="window-body">
+            <div id="connection-status">
+                 <svg class="connection-icon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 2 C8.268 2 2 8.268 2 16 s6.268 14 14 14 s14 -6.268 14 -14 S23.732 2 16 2 z M16 28 C9.373 28 4 22.627 4 16 S9.373 4 16 4 s12 5.373 12 12 S22.627 28 16 28 z" fill="#808080"/>
+                    <path d="M16 5 C11.589 5 8 8.589 8 13 L8 19 C8 23.411 11.589 27 16 27 C20.411 27 24 23.411 24 19 L24 13 C24 8.589 20.411 5 16 5 z M16 25 C12.691 25 10 22.309 10 19 L10 13 C10 10.691 12.691 8 16 8 C19.309 8 22 10.691 22 13 L22 19 C22 22.309 19.309 25 16 25 z" fill="#000080"/>
+                    <rect x="14" y="12" width="4" height="8" fill="#008080"/>
+                 </svg>
+                 <div id="connection-status-text">
+                     <p>Ready to connect...</p>
+                 </div>
+            </div>
 
-  /* ========= Get Attribute and Uniform Locations ========= */
-  const aPositionLoc = gl.getAttribLocation(shaderProgram, "aPosition");
-  const aNormalLoc   = gl.getAttribLocation(shaderProgram, "aNormal");
-  const uModelLoc      = gl.getUniformLocation(shaderProgram, "uModel");
-  const uViewLoc       = gl.getUniformLocation(shaderProgram, "uView");
-  const uProjectionLoc = gl.getUniformLocation(shaderProgram, "uProjection");
-  const uColorLoc      = gl.getUniformLocation(shaderProgram, "uColor");
-  const uLightDirLoc   = gl.getUniformLocation(shaderProgram, "uLightDir");
+            <div id="weather-display" style="display: none;">
+                <h2>
+                    <svg class="weather-icon" id="weather-condition-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M41.5 21C39.51 14.84 33.27 10 26 10c-7.73 0-14 6.27-14 14 0 .76.07 1.51.21 2.24C6.79 27.2 2 32.28 2 38.5 2 45.4 7.6 51 14.5 51h31C52.95 51 59 44.95 59 37.5c0-6.97-5.16-12.74-11.94-13.75C45.38 22.4 43.6 21.34 41.5 21z" fill="#B0B0B0" stroke="#808080" stroke-width="2"/>
+                    </svg>
+                    Weather Report
+                </h2>
+                <p><strong>Location:</strong> <span id="location">Loading...</span></p>
+                <p><strong>Date:</strong> <span id="weather-date">Loading...</span></p>
+                <div class="status-bar">
+                    <p class="status-bar-field" id="condition">Condition: --</p>
+                    <p class="status-bar-field" id="temp">Temp: --°F</p>
+                    <p class="status-bar-field" id="humidity">Humidity: --%</p>
+                </div>
+                <p id="data-notice" class="notice">*Specific historical weather data for 1995 is based on researched records, not a live API.</p>
+            </div>
 
-  /* ========= Minimal Math Library ========= */
-  const mat4 = {
-    create: () => new Float32Array(16),
-    identity: function(out) {
-      out.set([1, 0, 0, 0,
-               0, 1, 0, 0,
-               0, 0, 1, 0,
-               0, 0, 0, 1]);
-      return out;
-    },
-    multiply: function(out, a, b) {
-      const a00 = a[0],  a01 = a[1],  a02 = a[2],  a03 = a[3],
-            a10 = a[4],  a11 = a[5],  a12 = a[6],  a13 = a[7],
-            a20 = a[8],  a21 = a[9],  a22 = a[10], a23 = a[11],
-            a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
+             <div class="status-bar main-status">
+                <p class="status-bar-field" id="app-status">Idle</p>
+            </div>
+        </div>
+    </div>
 
-      const b00 = b[0],  b01 = b[1],  b02 = b[2],  b03 = b[3],
-            b10 = b[4],  b11 = b[5],  b12 = b[6],  b13 = b[7],
-            b20 = b[8],  b21 = b[9],  b22 = b[10], b23 = b[11],
-            b30 = b[12], b31 = b[13], b32 = b[14], b33 = b[15];
+    
+    <audio id="dialup-audio" 
+           src="https://www.soundjay.com/communication/sounds/dial-up-modem-01.mp3" 
+           preload="auto" 
+           style="display: none;">
+           Your browser does not support the audio element.
+    </audio>
 
-      out[0]  = a00*b00 + a01*b10 + a02*b20 + a03*b30;
-      out[1]  = a00*b01 + a01*b11 + a02*b21 + a03*b31;
-      out[2]  = a00*b02 + a01*b12 + a02*b22 + a03*b32;
-      out[3]  = a00*b03 + a01*b13 + a02*b23 + a03*b33;
-      out[4]  = a10*b00 + a11*b10 + a12*b20 + a13*b30;
-      out[5]  = a10*b01 + a11*b11 + a12*b21 + a13*b31;
-      out[6]  = a10*b02 + a11*b12 + a12*b22 + a13*b32;
-      out[7]  = a10*b03 + a11*b13 + a12*b23 + a13*b33;
-      out[8]  = a20*b00 + a21*b10 + a22*b20 + a23*b30;
-      out[9]  = a20*b01 + a21*b11 + a22*b21 + a23*b31;
-      out[10] = a20*b02 + a21*b12 + a22*b22 + a23*b32;
-      out[11] = a20*b03 + a21*b13 + a22*b23 + a23*b33;
-      out[12] = a30*b00 + a31*b10 + a32*b20 + a33*b30;
-      out[13] = a30*b01 + a31*b11 + a32*b21 + a33*b31;
-      out[14] = a30*b02 + a31*b12 + a32*b22 + a33*b32;
-      out[15] = a30*b03 + a31*b13 + a32*b23 + a33*b33;
-      return out;
-    },
-    translate: function(out, a, v) {
-      const x = v[0], y = v[1], z = v[2],
-            a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
-            a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
-            a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11];
-      out[0] = a00; out[1] = a01; out[2] = a02; out[3] = a03;
-      out[4] = a10; out[5] = a11; out[6] = a12; out[7] = a13;
-      out[8] = a20; out[9] = a21; out[10] = a22; out[11] = a23;
-      out[12] = a00*x + a10*y + a20*z + a[12];
-      out[13] = a01*x + a11*y + a21*z + a[13];
-      out[14] = a02*x + a12*y + a22*z + a[14];
-      out[15] = a03*x + a13*y + a23*z + a[15];
-      return out;
-    },
-    rotateY: function(out, a, rad) {
-      const s = Math.sin(rad), c = Math.cos(rad);
-      // Only rotation part; assuming a is already an identity or translation matrix.
-      out[0] = a[0]*c + a[8]*s;
-      out[1] = a[1]*c + a[9]*s;
-      out[2] = a[2]*c + a[10]*s;
-      out[3] = a[3]*c + a[11]*s;
-      out[8] = a[0]*-s + a[8]*c;
-      out[9] = a[1]*-s + a[9]*c;
-      out[10] = a[2]*-s + a[10]*c;
-      out[11] = a[3]*-s + a[11]*c;
-      // Copy remaining rows
-      out[4] = a[4]; out[5] = a[5]; out[6] = a[6]; out[7] = a[7];
-      out[12] = a[12]; out[13] = a[13]; out[14] = a[14]; out[15] = a[15];
-      return out;
-    },
-    scale: function(out, a, v) {
-      const x = v[0], y = v[1], z = v[2];
-      out[0] = a[0] * x;
-      out[1] = a[1] * x;
-      out[2] = a[2] * x;
-      out[3] = a[3] * x;
-      out[4] = a[4] * y;
-      out[5] = a[5] * y;
-      out[6] = a[6] * y;
-      out[7] = a[7] * y;
-      out[8] = a[8] * z;
-      out[9] = a[9] * z;
-      out[10] = a[10] * z;
-      out[11] = a[11] * z;
-      out[12] = a[12];
-      out[13] = a[13];
-      out[14] = a[14];
-      out[15] = a[15];
-      return out;
-    },
-    perspective: function(out, fovy, aspect, near, far) {
-      const f = 1.0 / Math.tan(fovy / 2), nf = 1 / (near - far);
-      out[0] = f / aspect;
-      out[1] = 0;
-      out[2] = 0;
-      out[3] = 0;
-      out[4] = 0;
-      out[5] = f;
-      out[6] = 0;
-      out[7] = 0;
-      out[8] = 0;
-      out[9] = 0;
-      out[10] = (far + near) * nf;
-      out[11] = -1;
-      out[12] = 0;
-      out[13] = 0;
-      out[14] = (2 * far * near) * nf;
-      out[15] = 0;
-      return out;
-    },
-    lookAt: function(out, eye, center, up) {
-      let x0, x1, x2, y0, y1, y2, z0, z1, z2,
-          eyex = eye[0], eyey = eye[1], eyez = eye[2],
-          cx = center[0], cy = center[1], cz = center[2],
-          upx = up[0], upy = up[1], upz = up[2];
-      z0 = eyex - cx; z1 = eyey - cy; z2 = eyez - cz;
-      let len = Math.hypot(z0, z1, z2);
-      if (len === 0) { z2 = 1; } else { z0 /= len; z1 /= len; z2 /= len; }
-      x0 = upy * z2 - upz * z1;
-      x1 = upz * z0 - upx * z2;
-      x2 = upx * z1 - upy * z0;
-      len = Math.hypot(x0, x1, x2);
-      if (len === 0) { x0 = 0; x1 = 0; x2 = 0; } else { x0 /= len; x1 /= len; x2 /= len; }
-      y0 = z1 * x2 - z2 * x1;
-      y1 = z2 * x0 - z0 * x2;
-      y2 = z0 * x1 - z1 * x0;
-      out[0] = x0; out[1] = y0; out[2] = z0; out[3] = 0;
-      out[4] = x1; out[5] = y1; out[6] = z1; out[7] = 0;
-      out[8] = x2; out[9] = y2; out[10] = z2; out[11] = 0;
-      out[12] = -(x0 * eyex + x1 * eyey + x2 * eyez);
-      out[13] = -(y0 * eyex + y1 * eyey + y2 * eyez);
-      out[14] = -(z0 * eyex + z1 * eyey + z2 * eyez);
-      out[15] = 1;
-      return out;
-    }
-  };
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const connectContainer = document.getElementById('connect-container');
+            const connectButton = document.getElementById('connect-button');
+            const win95Window = document.getElementById('win95-window');
+            const connectionStatusDiv = document.getElementById('connection-status');
+            const connectionStatusText = document.getElementById('connection-status-text');
+            const weatherDisplayDiv = document.getElementById('weather-display');
+            const windowTitleText = document.getElementById('window-title-text');
+            const appStatus = document.getElementById('app-status');
+            const weatherConditionIcon = document.getElementById('weather-condition-icon');
+            const dialupAudio = document.getElementById('dialup-audio');
 
-  const vec3 = {
-    create: (x=0, y=0, z=0) => [x, y, z],
-    add: (a, b) => [a[0]+b[0], a[1]+b[1], a[2]+b[2]],
-    subtract: (a, b) => [a[0]-b[0], a[1]-b[1], a[2]-b[2]],
-    scale: (v, s) => [v[0]*s, v[1]*s, v[2]*s],
-    length: (v) => Math.hypot(v[0], v[1], v[2]),
-    normalize: function(v) {
-      const len = vec3.length(v);
-      return len > 0 ? [v[0]/len, v[1]/len, v[2]/len] : [0,0,0];
-    }
-  };
+            const DEFAULT_SIMULATION_TIME = 15; // Default time in seconds if audio fails
 
-  /* ========= Geometry: Cube ========= */
-  // A cube with 24 vertices (4 per face) so that each face can have its own normal.
-  const cubePositions = new Float32Array([
-    // Front face
-    -0.5,-0.5, 0.5,   0.5,-0.5, 0.5,   0.5, 0.5, 0.5,  -0.5, 0.5, 0.5,
-    // Back face
-    -0.5,-0.5,-0.5,  -0.5, 0.5,-0.5,   0.5, 0.5,-0.5,   0.5,-0.5,-0.5,
-    // Top face
-    -0.5, 0.5,-0.5,  -0.5, 0.5, 0.5,   0.5, 0.5, 0.5,   0.5, 0.5,-0.5,
-    // Bottom face
-    -0.5,-0.5,-0.5,   0.5,-0.5,-0.5,   0.5,-0.5, 0.5,  -0.5,-0.5, 0.5,
-    // Right face
-     0.5,-0.5,-0.5,   0.5, 0.5,-0.5,   0.5, 0.5, 0.5,   0.5,-0.5, 0.5,
-    // Left face
-    -0.5,-0.5,-0.5,  -0.5,-0.5, 0.5,  -0.5, 0.5, 0.5,  -0.5, 0.5,-0.5,
-  ]);
-  const cubeNormals = new Float32Array([
-    // Front
-     0, 0, 1,  0, 0, 1,  0, 0, 1,  0, 0, 1,
-    // Back
-     0, 0,-1,  0, 0,-1,  0, 0,-1,  0, 0,-1,
-    // Top
-     0, 1, 0,  0, 1, 0,  0, 1, 0,  0, 1, 0,
-    // Bottom
-     0,-1, 0,  0,-1, 0,  0,-1, 0,  0,-1, 0,
-    // Right
-     1, 0, 0,  1, 0, 0,  1, 0, 0,  1, 0, 0,
-    // Left
-    -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0,
-  ]);
-  const cubeIndices = new Uint16Array([
-    0, 1, 2,   0, 2, 3,       // front
-    4, 5, 6,   4, 6, 7,       // back
-    8, 9,10,   8,10,11,       // top
-    12,13,14,  12,14,15,      // bottom
-    16,17,18,  16,18,19,      // right
-    20,21,22,  20,22,23       // left
-  ]);
+            // --- Dial-Up Simulation Text Steps ---
+            const dialUpTextSteps = [
+                "Initializing Modem...",
+                "Dialing ISP (555-DIAL)...",
+                "Connecting at 56 kbps...",
+                "Authenticating User...",
+                "Connection Established!"
+            ];
 
-  // Create and fill buffers
-  const cubePositionBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, cubePositionBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, cubePositions, gl.STATIC_DRAW);
-  const cubeNormalBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, cubeNormalBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, cubeNormals, gl.STATIC_DRAW);
-  const cubeIndexBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeIndexBuffer);
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, cubeIndices, gl.STATIC_DRAW);
+            let simulationTimer = null; // To hold the setTimeout reference
 
-  /* ========= Game State ========= */
-  let gameRunning = false;
-  let score = 0;
-  const player = {
-    position: vec3.create(0, 0.5, 0),
-    angle: 0, // Yaw angle in radians; 0 = facing down -Z.
-    fireCooldown: 0
-  };
-  const enemies = [];   // Each enemy: { position: vec3, speed: number }
-  const projectiles = []; // Each projectile: { position: vec3, velocity: vec3, life: number }
+            // --- Function to run the simulation steps ---
+            function runSimulationSteps(duration) {
+                console.log(`Starting simulation with duration: ${duration} seconds`);
+                connectionStatusText.innerHTML = ''; // Clear previous text
+                const stepInterval = (duration * 1000) / dialUpTextSteps.length; // Interval in ms
 
-  const spawnEnemyDistance = 15;
-  const enemySpeed = 1.5;
-  const projectileSpeed = 10;
-  const projectileLife = 2.0;
+                dialUpTextSteps.forEach((text, index) => {
+                    setTimeout(() => {
+                        console.log(`Displaying step ${index}: ${text}`);
+                        connectionStatusText.innerHTML += `<p>${text}</p>`;
+                        connectionStatusDiv.scrollTop = connectionStatusDiv.scrollHeight;
+                        appStatus.textContent = text;
+                        windowTitleText.textContent = `WeatherNET 95 - ${text}`;
 
-  /* ========= Input Handling ========= */
-  const keys = {};
-  window.addEventListener("keydown", (e) => {
-    keys[e.code] = true;
-    // Start game on Enter if not already running.
-    if (!gameRunning && e.code === "Enter") {
-      resetGame();
-      gameRunning = true;
-      message.style.display = "none";
-    }
-  });
-  window.addEventListener("keyup", (e) => {
-    keys[e.code] = false;
-  });
+                        // If it's the last step, prepare to show weather
+                        if (index === dialUpTextSteps.length - 1) {
+                            // Set final title and status
+                            windowTitleText.textContent = "WeatherNET 95 - Connected";
+                            appStatus.textContent = "Fetching weather data...";
+                            // Fetch weather slightly after the last message appears
+                            setTimeout(() => {
+                                connectionStatusDiv.style.display = 'none'; // Hide connection panel
+                                fetchAndDisplayHistoricalWeather();
+                            }, 500); // Short delay after "Connected!"
+                        }
+                    }, index * stepInterval);
+                });
+            }
 
-  /* ========= Game Reset ========= */
-  function resetGame() {
-    player.position = vec3.create(0, 0.5, 0);
-    player.angle = 0;
-    player.fireCooldown = 0;
-    enemies.length = 0;
-    projectiles.length = 0;
-    score = 0;
-    // Spawn 3 enemies at random positions far from the player.
-    for (let i = 0; i < 3; i++) {
-      spawnEnemy();
-    }
-    hud.textContent = "Score: " + score;
-  }
 
-  function spawnEnemy() {
-    // Place enemy at random angle around player at spawnEnemyDistance.
-    const angle = Math.random() * Math.PI * 2;
-    const pos = vec3.create(
-      Math.cos(angle) * spawnEnemyDistance,
-      0.5,
-      Math.sin(angle) * spawnEnemyDistance
-    );
-    enemies.push({ position: pos, speed: enemySpeed });
-  }
+            // --- Weather Fetching and Display (Remains the same) ---
+            function fetchAndDisplayHistoricalWeather() {
+                const location = "New York, NY";
+                const today = new Date();
+                const historicalDate = new Date(today);
+                historicalDate.setFullYear(1995);
 
-  /* ========= Game Loop ========= */
-  let lastTime = 0;
-  function gameLoop(time) {
-    const delta = (time - lastTime) * 0.001;
-    lastTime = time;
-    if (gameRunning) {
-      update(delta);
-      render();
-    }
-    requestAnimationFrame(gameLoop);
-  }
-  requestAnimationFrame(gameLoop);
+                const formattedDate = historicalDate.toLocaleDateString('en-US', {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                });
 
-  /* ========= Update Function ========= */
-  function update(delta) {
-    // --- Player Movement ---
-    const moveSpeed = 5;
-    const rotateSpeed = 2.5;
-    // Forward/backward (W/S)
-    if (keys["KeyW"]) {
-      player.position[0] += Math.sin(player.angle) * moveSpeed * delta;
-      player.position[2] += -Math.cos(player.angle) * moveSpeed * delta;
-    }
-    if (keys["KeyS"]) {
-      player.position[0] -= Math.sin(player.angle) * moveSpeed * delta;
-      player.position[2] -= -Math.cos(player.angle) * moveSpeed * delta;
-    }
-    // Rotate (A/D)
-    if (keys["KeyA"]) {
-      player.angle -= rotateSpeed * delta;
-    }
-    if (keys["KeyD"]) {
-      player.angle += rotateSpeed * delta;
-    }
-    // --- Shooting ---
-    player.fireCooldown -= delta;
-    if (keys["Space"] && player.fireCooldown <= 0) {
-      // Spawn a projectile at a slight offset in front of the mech.
-      const projPos = vec3.add(player.position, vec3.scale([Math.sin(player.angle), 0, -Math.cos(player.angle)], 0.7));
-      const velocity = vec3.scale([Math.sin(player.angle), 0, -Math.cos(player.angle)], projectileSpeed);
-      projectiles.push({ position: projPos, velocity: velocity, life: projectileLife });
-      player.fireCooldown = 0.3; // Fire rate limit.
-    }
+                const simulatedWeather = {
+                    condition: "Partly Cloudy, Cool",
+                    tempF: 50,
+                    humidity: 60
+                };
+                updateWeatherIcon(simulatedWeather.condition);
 
-    // --- Update Projectiles ---
-    for (let i = projectiles.length - 1; i >= 0; i--) {
-      const p = projectiles[i];
-      p.position[0] += p.velocity[0] * delta;
-      p.position[1] += p.velocity[1] * delta;
-      p.position[2] += p.velocity[2] * delta;
-      p.life -= delta;
-      if (p.life <= 0) {
-        projectiles.splice(i, 1);
-      }
-    }
+                setTimeout(() => {
+                    document.getElementById('location').textContent = location;
+                    document.getElementById('weather-date').textContent = formattedDate;
+                    document.getElementById('condition').textContent = `Condition: ${simulatedWeather.condition}`;
+                    document.getElementById('temp').textContent = `Temp: ${simulatedWeather.tempF}°F`;
+                    document.getElementById('humidity').textContent = `Humidity: ${simulatedWeather.humidity}%`;
 
-    // --- Update Enemies ---
-    for (let i = enemies.length - 1; i >= 0; i--) {
-      const enemy = enemies[i];
-      // Move enemy toward player.
-      const toPlayer = vec3.subtract(player.position, enemy.position);
-      const dist = vec3.length(toPlayer);
-      const dir = vec3.normalize(toPlayer);
-      enemy.position[0] += dir[0] * enemy.speed * delta;
-      enemy.position[1] += dir[1] * enemy.speed * delta;
-      enemy.position[2] += dir[2] * enemy.speed * delta;
+                    weatherDisplayDiv.style.display = 'block';
+                    appStatus.textContent = "Weather data loaded.";
+                    windowTitleText.textContent = "WeatherNET 95 - Report";
+                }, 500); // Reduced delay as connection panel is already hidden
+            }
 
-      // Check collision with player (game over if too close)
-      if (dist < 1.0) {
-        gameRunning = false;
-        message.textContent = "Game Over!\nPress ENTER to Restart";
-        message.style.display = "block";
-      }
+            // --- Helper to Update Weather Icon (Remains the same) ---
+            function updateWeatherIcon(condition) {
+                let iconSvg = '';
+                const lowerCondition = condition.toLowerCase();
+                 if (lowerCondition.includes("cloudy")) {
+                     iconSvg = `<path d="M41.7 21.3C39.7 15.1 33.5 10 26 10c-7.7 0-14 6.3-14 14 0 .8.1 1.5.2 2.2C6.8 27.2 2 32.3 2 38.5 2 45.4 7.6 51 14.5 51h31C52.9 51 59 45 59 37.5c0-7-5.2-12.7-11.9-13.8C45.4 22.4 43.6 21.3 41.7 21.3z" fill="#F0F0F0" stroke="#888" stroke-width="1.5"/><path d="M51.5 31.5c4.1 0 7.5 3.4 7.5 7.5s-3.4 7.5-7.5 7.5h-31C13.1 46.5 7 40.4 7 33c0-6.2 4.4-11.4 10.2-12.8.5-.1.9-.4 1.1-.9.6-1.2.9-2.5.9-3.8 0-5.5 4.5-10 10-10 5.1 0 9.4 3.8 9.9 8.8.1.7.6 1.2 1.3 1.3 5.2.7 9.1 5.1 9.1 10.4z" fill="#FFF" stroke="#AAA" stroke-width="1" transform="translate(-4, -4) scale(1.1)"/>`;
+                } else if (lowerCondition.includes("sunny") || lowerCondition.includes("clear")) {
+                    iconSvg = `<circle cx="32" cy="32" r="12" fill="#FFD700" stroke="#FFA500" stroke-width="2"/><line x1="32" y1="8" x2="32" y2="14" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="32" y1="50" x2="32" y2="56" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="56" y1="32" x2="50" y2="32" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="14" y1="32" x2="8" y2="32" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="49.5" y1="14.5" x2="45.2" y2="18.8" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="18.8" y1="45.2" x2="14.5" y2="49.5" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="49.5" y1="49.5" x2="45.2" y2="45.2" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="18.8" y1="18.8" x2="14.5" y2="14.5" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>`;
+                } else if (lowerCondition.includes("rain") || lowerCondition.includes("showers")) {
+                     iconSvg = `<path d="M41.7 21.3C39.7 15.1 33.5 10 26 10c-7.7 0-14 6.3-14 14 0 .8.1 1.5.2 2.2C6.8 27.2 2 32.3 2 38.5 2 45.4 7.6 51 14.5 51h31C52.9 51 59 45 59 37.5c0-7-5.2-12.7-11.9-13.8C45.4 22.4 43.6 21.3 41.7 21.3z" fill="#B0C4DE" stroke="#778899" stroke-width="1.5"/> <line x1="20" y1="42" x2="24" y2="52" stroke="#4682B4" stroke-width="2.5" stroke-linecap="round"/> <line x1="30" y1="44" x2="34" y2="54" stroke="#4682B4" stroke-width="2.5" stroke-linecap="round"/> <line x1="40" y1="42" x2="44" y2="52" stroke="#4682B4" stroke-width="2.5" stroke-linecap="round"/>`;
+                }
+                 else {
+                    iconSvg = `<path d="M41.5 21C39.51 14.84 33.27 10 26 10c-7.73 0-14 6.27-14 14 0 .76.07 1.51.21 2.24C6.79 27.2 2 32.28 2 38.5 2 45.4 7.6 51 14.5 51h31C52.95 51 59 44.95 59 37.5c0-6.97-5.16-12.74-11.94-13.75C45.38 22.4 43.6 21.34 41.5 21z" fill="#B0B0B0" stroke="#808080" stroke-width="2"/>`;
+                }
+                weatherConditionIcon.innerHTML = iconSvg;
+            }
 
-      // Check collision with any projectile.
-      for (let j = projectiles.length - 1; j >= 0; j--) {
-        const proj = projectiles[j];
-        const diff = vec3.subtract(enemy.position, proj.position);
-        if (vec3.length(diff) < 0.7) {
-          // Enemy hit.
-          enemies.splice(i, 1);
-          projectiles.splice(j, 1);
-          score += 10;
-          hud.textContent = "Score: " + score;
-          // Spawn a new enemy.
-          spawnEnemy();
-          break;
-        }
-      }
-    }
-  }
+            // --- Handle Audio Loading Success ---
+            function handleAudioLoad() {
+                 if (dialupAudio.duration && !isNaN(dialupAudio.duration)) {
+                    console.log(`Audio loaded. Duration: ${dialupAudio.duration} seconds.`);
+                    // Play audio and start simulation based on its duration
+                    dialupAudio.play().catch(e => {
+                         console.error("Audio play failed:", e);
+                         displayAudioError("Could not play audio.");
+                         runSimulationSteps(DEFAULT_SIMULATION_TIME); // Fallback timing
+                    });
+                    runSimulationSteps(dialupAudio.duration);
+                } else {
+                    // Duration not available even after metadata loaded? Fallback.
+                    console.warn("Audio duration not available after metadata load.");
+                    displayAudioError("Could not get audio duration.");
+                    runSimulationSteps(DEFAULT_SIMULATION_TIME);
+                }
+            }
 
-  /* ========= Render Function ========= */
-  function render() {
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    gl.clearColor(0.05, 0.05, 0.1, 1);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+             // --- Handle Audio Loading Errors (CORS, Network, etc.) ---
+             function handleAudioError(e) {
+                console.error("Error loading audio:", e);
+                // Display error in the status panel
+                displayAudioError("Failed to load dial-up sound (Network/CORS issue?).");
+                // Run simulation with default timing
+                runSimulationSteps(DEFAULT_SIMULATION_TIME);
+             }
 
-    // --- Setup Projection and View ---
-    const aspect = canvas.width / canvas.height;
-    const projMatrix = mat4.create();
-    mat4.perspective(projMatrix, Math.PI/3, aspect, 0.1, 100.0);
-    gl.uniformMatrix4fv(uProjectionLoc, false, projMatrix);
+             function displayAudioError(message) {
+                 connectionStatusText.innerHTML += `<p class="error-notice">${message}</p>`;
+                 connectionStatusText.innerHTML += `<p>Using default timing...</p>`;
+                 connectionStatusDiv.scrollTop = connectionStatusDiv.scrollHeight; // Scroll to show error
+             }
 
-    // Camera: third–person behind the player.
-    const camDist = 8;
-    const camHeight = 4;
-    const camOffset = [ Math.sin(player.angle)*-camDist, camHeight, -Math.cos(player.angle)*-camDist ];
-    const camPos = vec3.add(player.position, camOffset);
-    const viewMatrix = mat4.create();
-    mat4.lookAt(viewMatrix, camPos, player.position, [0,1,0]);
-    gl.uniformMatrix4fv(uViewLoc, false, viewMatrix);
+             // Add error handler to the audio element
+             dialupAudio.addEventListener('error', handleAudioError);
 
-    // Set light direction (from above and in front)
-    gl.uniform3fv(uLightDirLoc, vec3.normalize([0.5, 1.0, 0.3]));
 
-    // --- Draw Ground ---
-    let model = mat4.create();
-    mat4.identity(model);
-    // Scale a cube into a flat, huge quad.
-    mat4.translate(model, model, [0, -0.001, 0]);
-    mat4.scale(model, model, [50, 0.01, 50]);
-    drawCube(model, [0.2, 0.2, 0.2]);
+            // --- Event Listener for Connect Button ---
+            connectButton.addEventListener('click', () => {
+                // Hide connect button and show the main window
+                connectContainer.style.display = 'none';
+                win95Window.style.display = 'flex';
 
-    // --- Draw Player Mech ---
-    model = mat4.create();
-    mat4.identity(model);
-    mat4.translate(model, model, player.position);
-    mat4.rotateY(model, model, player.angle);
-    mat4.scale(model, model, [1, 1, 1]);
-    drawCube(model, [0.0, 0.8, 0.0]);
+                // Prepare the connection status panel
+                connectionStatusText.innerHTML = '<p>Preparing connection...</p>';
+                appStatus.textContent = "Preparing...";
+                windowTitleText.textContent = "WeatherNET 95 - Connecting...";
 
-    // --- Draw Enemies ---
-    for (const enemy of enemies) {
-      model = mat4.create();
-      mat4.identity(model);
-      mat4.translate(model, model, enemy.position);
-      // Optionally, have enemies face the player.
-      const enemyDir = Math.atan2(player.position[0]-enemy.position[0], player.position[2]-enemy.position[2]);
-      mat4.rotateY(model, model, enemyDir);
-      mat4.scale(model, model, [1, 1, 1]);
-      drawCube(model, [0.8, 0.0, 0.0]);
-    }
+                // Try to load and play the audio
+                // Check if metadata (including duration) is already loaded
+                if (dialupAudio.readyState >= 1) { // HAVE_METADATA or more
+                     handleAudioLoad();
+                } else {
+                    // Wait for metadata to load if not ready
+                    console.log("Audio metadata not ready, waiting for 'loadedmetadata' event...");
+                    dialupAudio.addEventListener('loadedmetadata', handleAudioLoad, { once: true });
+                     // Add a timeout fallback in case loadedmetadata never fires (e.g., invalid URL)
+                     setTimeout(() => {
+                         if (dialupAudio.readyState < 1) {
+                             console.warn("Timeout waiting for audio metadata.");
+                             handleAudioError(new Error("Timeout waiting for metadata"));
+                             dialupAudio.removeEventListener('loadedmetadata', handleAudioLoad); // Clean up listener
+                         }
+                     }, 5000); // 5 second timeout
+                }
+            });
 
-    // --- Draw Projectiles ---
-    for (const proj of projectiles) {
-      model = mat4.create();
-      mat4.identity(model);
-      mat4.translate(model, model, proj.position);
-      mat4.scale(model, model, [0.3, 0.3, 0.3]);
-      drawCube(model, [1.0, 1.0, 0.0]);
-    }
-  }
-
-  /* ========= Draw Cube Helper ========= */
-  function drawCube(modelMatrix, color) {
-    gl.uniformMatrix4fv(uModelLoc, false, modelMatrix);
-    gl.uniform3fv(uColorLoc, color);
-    // Bind position buffer.
-    gl.bindBuffer(gl.ARRAY_BUFFER, cubePositionBuffer);
-    gl.enableVertexAttribArray(aPositionLoc);
-    gl.vertexAttribPointer(aPositionLoc, 3, gl.FLOAT, false, 0, 0);
-    // Bind normal buffer.
-    gl.bindBuffer(gl.ARRAY_BUFFER, cubeNormalBuffer);
-    gl.enableVertexAttribArray(aNormalLoc);
-    gl.vertexAttribPointer(aNormalLoc, 3, gl.FLOAT, false, 0, 0);
-    // Bind index buffer and draw.
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeIndexBuffer);
-    gl.drawElements(gl.TRIANGLES, cubeIndices.length, gl.UNSIGNED_SHORT, 0);
-  }
-
-  /* ========= Resize Handling ========= */
-  window.addEventListener("resize", () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  });
-  </script>
+        });
+    </script>
 </body>
 </html>
