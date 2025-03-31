@@ -3,30 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WeatherNET 95</title>
+    <title>WeatherNET 95 Simulation</title>
     
     <style>
-        /* --- Basic Setup and Body --- */
-        body {
-            background-color: #008080; /* Classic Teal Background */
+        /* --- Base Styles --- */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent scrollbars on the body */
             font-family: 'Tahoma', 'MS Sans Serif', 'Arial', sans-serif;
             font-size: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
         }
-
-        /* --- Initial Connect Button Container --- */
-        #connect-container {
-            text-align: center;
-            background-color: #C0C0C0;
-            padding: 20px;
-            border: 2px solid;
-            border-color: #ffffff #808080 #808080 #ffffff;
-            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        body {
+            background-color: #008080; /* Win95 Teal Background */
+            position: relative; /* Needed for absolute positioning of window */
         }
 
         /* --- Win95 Style Button --- */
@@ -34,67 +25,82 @@
             background-color: #C0C0C0;
             border: 1px solid;
             border-color: #ffffff #808080 #808080 #ffffff; /* Raised */
-            box-shadow: 1px 1px 1px #404040;
-            padding: 5px 15px;
+            box-shadow: 1px 1px 0px 1px #000000; /* Outer black pixel */
+            padding: 3px 12px; /* Adjusted padding */
             font-family: inherit;
-            font-size: 12px;
+            font-size: 11px; /* Slightly smaller font */
             cursor: pointer;
-            min-width: 75px; /* Standard button width */
-            min-height: 23px; /* Standard button height */
+            min-width: 75px;
+            min-height: 23px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             text-align: center;
             vertical-align: middle;
+            box-sizing: border-box;
         }
         .win95-button:active {
             border-color: #808080 #ffffff #ffffff #808080; /* Sunken */
-            box-shadow: none;
-            padding: 6px 14px 4px 16px; /* Shift text slightly */
+            box-shadow: none; /* Remove outer shadow on press */
+            background-color: #e0e0e0; /* Slightly darker background */
+            padding: 4px 11px 2px 13px; /* Shift text slightly */
         }
         .win95-button:focus {
-            /* Dotted focus like Win95 */
             outline: 1px dotted #000000;
-            outline-offset: -3px;
+            outline-offset: -4px; /* Inside the button */
         }
          /* Special style for Details button focus */
         .details-button:focus {
-            border: 1px dotted black;
-            outline: none; /* Remove default outline */
-             padding: 5px 15px; /* Reset padding */
+            /* Draw dotted border inside */
+            box-shadow: 1px 1px 0px 1px #000000, inset 0 0 0 1px #C0C0C0, inset 1px 1px 0 1px #000;
+            border: 1px dotted #000;
+            outline: none;
+            padding: 3px 12px; /* Keep padding consistent */
         }
 
 
-        /* --- Main Window Styling (Initially Hidden) --- */
+        /* --- Main Window Styling --- */
         #win95-window {
             width: 90%;
             max-width: 480px;
-            min-width: 350px; /* Increased min-width for new layout */
+            min-width: 350px;
             background-color: #C0C0C0;
-            border: 2px solid;
-            border-color: #ffffff #808080 #808080 #ffffff;
-            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            padding: 3px;
+             /* More accurate Win95 border */
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #808080;
+            border-bottom: 2px solid #808080;
+            box-shadow: 1px 1px 0 1px #000000; /* Outer black pixel */
+            padding: 1px; /* Inner padding for title bar */
             display: flex;
             flex-direction: column;
+            position: absolute; /* Make it draggable */
+            top: 50px; /* Initial position */
+            left: 50px;
             display: none; /* Hidden initially */
+            z-index: 10; /* Ensure it's above connect container */
         }
 
         /* --- Title Bar --- */
         .title-bar {
             background: linear-gradient(to right, #000080, #1084d0);
             color: white;
-            padding: 3px 5px;
+            padding: 2px 4px; /* Adjusted padding */
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 20px;
-            margin-bottom: 3px;
+            height: 18px; /* More accurate height */
+            margin-bottom: 1px; /* Space before inner border */
             flex-shrink: 0;
-            cursor: default;
+            cursor: grab; /* Indicate draggable */
+            user-select: none; /* Prevent text selection when dragging */
+        }
+        .title-bar:active {
+             cursor: grabbing;
         }
         .title-bar-text {
             font-weight: bold;
+            font-size: 11px; /* Accurate font size */
             letter-spacing: 0.5px;
             white-space: nowrap;
             overflow: hidden;
@@ -103,117 +109,88 @@
             align-items: center;
         }
         .title-icon {
-             width: 16px;
-             height: 16px;
-             margin-right: 4px;
-             /* Simple network icon */
+             width: 16px; height: 16px; margin-right: 3px;
              background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23C0C0C0"><path d="M1 3h2v2H1zM4 3h2v2H4zM7 3h2v2H7zM1 6h2v2H1zM4 6h2v2H4zM7 6h2v2H7zM1 9h2v2H1zM4 9h2v2H4zM7 9h2v2H7zM11 1v1H9v1h2v1h1V3h2V2h-2V1zM11 5v1h-1v1h1v1h1V7h1V6h-1V5zM11 9v1h-1v1h1v1h1v-1h1v-1h-1V9z"/></svg>');
-             background-repeat: no-repeat;
-             background-size: contain;
+             background-repeat: no-repeat; background-size: contain; flex-shrink: 0;
         }
-        /* Window Control Buttons (Visual Only) */
+        /* Window Control Buttons */
         .title-bar-controls { flex-shrink: 0; }
         .title-bar-controls button {
-            width: 16px; height: 16px; margin-left: 2px;
+            width: 16px; height: 14px; /* Accurate size */
+            margin-left: 2px;
             background-color: #C0C0C0; border: 1px solid;
             border-color: #ffffff #808080 #808080 #ffffff;
-            box-shadow: 1px 1px 1px #404040;
+            box-shadow: 1px 1px 0 0 #000000; /* Black pixel shadow */
             font-family: 'Marlett', 'System', sans-serif; font-size: 10px; font-weight: bold;
-            padding: 0; line-height: 14px; color: black; cursor: default;
+            padding: 0; line-height: 12px; /* Adjust line height */
+            color: black; cursor: default;
             display: inline-flex; justify-content: center; align-items: center;
         }
         .title-bar-controls button:active {
              border-color: #808080 #ffffff #ffffff #808080; box-shadow: none;
+             padding-top: 1px; padding-left: 1px; /* Shift content on press */
         }
 
         /* --- Window Body --- */
         .window-body {
             background-color: #C0C0C0;
             padding: 10px;
-            min-height: 150px; /* Adjusted height */
-            border: 1px solid;
-            border-color: #808080 #ffffff #ffffff #808080;
+            min-height: 150px;
+            /* Inner border effect */
+            border-top: 1px solid #808080;
+            border-left: 1px solid #808080;
+            border-right: 1px solid #ffffff;
+            border-bottom: 1px solid #ffffff;
             flex-grow: 1;
-            overflow-y: auto; /* Changed to auto */
-            margin-bottom: 25px;
+            overflow-y: auto;
+            margin-bottom: 25px; /* Space for status bar */
             position: relative;
         }
 
-        /* --- NEW Connection Status Panel Layout --- */
+        /* --- Connection Status Panel Layout --- */
         #connection-status {
-            /* Replaces old style, uses flex */
-            display: flex;
-            align-items: flex-start; /* Align items to the top */
-            padding: 15px 10px; /* More padding */
-            min-height: 80px; /* Fixed height for the panel */
-            margin-bottom: 10px;
-             border: none; /* Remove old border */
-             background: none; /* Remove old background */
+            display: flex; align-items: flex-start;
+            padding: 15px 10px; min-height: 80px; margin-bottom: 10px;
+            border: none; background: none;
         }
         #connection-icon-area {
-            width: 64px; /* Fixed width for icon */
-            height: 64px; /* Fixed height for icon */
-            margin-right: 15px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 64px; height: 64px; margin-right: 15px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
         }
-        #connection-icon-area svg {
-             width: 100%;
-             height: 100%;
-        }
+        #connection-icon-area svg { width: 100%; height: 100%; }
         #connection-details-area {
-            flex-grow: 1; /* Takes remaining space */
-            display: flex;
-            flex-direction: column; /* Stack text and button */
-            justify-content: space-between; /* Space out text and button */
-            min-height: 64px; /* Match icon height */
+            flex-grow: 1; display: flex; flex-direction: column;
+            justify-content: space-between; min-height: 64px;
         }
-        #connection-text-area {
-             /* Holds status lines */
-             margin-bottom: 10px; /* Space above button */
-        }
+        #connection-text-area { margin-bottom: 10px; }
         #connection-status-line, #connected-info p {
-            margin: 3px 0; /* Spacing between lines */
-            font-family: 'Tahoma', 'MS Sans Serif', 'Arial', sans-serif; /* Regular font */
-            font-size: 12px;
+            margin: 3px 0; font-family: 'Tahoma', 'MS Sans Serif', 'Arial', sans-serif;
+            font-size: 11px; /* Match button font size */
         }
-         #connected-info {
-             display: none; /* Hidden initially */
-         }
-        #connection-button-area {
-            align-self: flex-end; /* Button to the right */
-            display: flex;
-            gap: 5px; /* Space between buttons if multiple */
-        }
-
-        /* Hide elements initially */
-        #disconnect-button, #details-button {
-            display: none;
-        }
+         #connected-info { display: none; }
+        #connection-button-area { align-self: flex-end; display: flex; gap: 5px; }
+        #disconnect-button, #details-button { display: none; }
 
 
         /* --- Weather Display Area --- */
-        #weather-display { display: none; /* Initially hidden */ }
+        #weather-display { display: none; }
         #weather-display h2 {
-            margin-top: 0; font-size: 14px; border-bottom: 1px dotted #808080;
+            margin-top: 0; font-size: 13px; border-bottom: 1px dotted #808080;
             padding-bottom: 5px; margin-bottom: 10px; display: flex; align-items: center;
         }
         .weather-icon { width: 24px; height: 24px; margin-right: 8px; }
-        #weather-display p { margin: 8px 0; }
+        #weather-display p { margin: 8px 0; font-size: 11px; }
 
-        /* --- Status Bar --- */
-        .status-bar {
-          border: 1px solid; border-color: #808080 #ffffff #ffffff #808080;
-          padding: 2px 4px; display: flex; margin-top: 10px; background-color: #C0C0C0;
-        }
+        /* --- Main App Status Bar --- */
         .main-status {
-            position: absolute; bottom: 3px; left: 3px; right: 3px;
+            position: absolute; bottom: 1px; left: 1px; right: 1px; /* Inside window body padding */
             margin-top: 0; height: 20px; box-sizing: border-box;
+            border: 1px solid; border-color: #808080 #ffffff #ffffff #808080; /* Sunken */
+            padding: 1px 2px; display: flex; background-color: #C0C0C0;
         }
         .status-bar-field {
-          flex: 1; margin: 0 2px; padding: 0 4px;
+          flex: 1; margin: 0 1px; padding: 0 4px;
+          /* Inner bevel effect */
           border-right: 1px solid #808080; border-bottom: 1px solid #808080;
           border-left: 1px solid #ffffff; border-top: 1px solid #ffffff;
           font-size: 11px; line-height: 16px; overflow: hidden;
@@ -224,18 +201,93 @@
         /* --- Notice Styling --- */
         .notice { font-size: 10px; color: #404040; margin-top: 15px; text-align: center; }
         .error-notice { color: #8B0000; font-weight: bold; }
+
+        /* --- Taskbar --- */
+        #taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 28px; /* Standard taskbar height */
+            background-color: #C0C0C0;
+            border-top: 2px solid #ffffff; /* Raised effect */
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            padding: 2px;
+            z-index: 100; /* Above windows */
+        }
+        #start-button {
+            background-color: #C0C0C0;
+            border: 1px solid;
+            border-color: #ffffff #808080 #808080 #ffffff;
+            box-shadow: 1px 1px 0px 1px #000000;
+            padding: 2px 6px;
+            font-weight: bold;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            margin-right: 4px;
+            cursor: default; /* Non-functional */
+            min-height: 22px;
+        }
+        #start-button:active {
+            border-color: #808080 #ffffff #ffffff #808080;
+            box-shadow: none;
+            padding: 3px 5px 1px 7px;
+        }
+        #start-icon {
+             width: 16px; height: 16px; margin-right: 4px;
+             /* Simplified Win95 logo */
+             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="%23FF0000" d="M1 1h6v6H1z"/><path fill="%2300FF00" d="M8 1h7v6H8z"/><path fill="%230000FF" d="M1 8h6v7H1z"/><path fill="%23FFFF00" d="M8 8h7v7H8z"/></svg>');
+             background-size: contain;
+        }
+        #taskbar-divider {
+            height: 22px;
+            width: 1px;
+            border-left: 1px solid #808080;
+            border-right: 1px solid #ffffff;
+            margin: 0 4px;
+        }
+        #clock-area {
+            margin-left: auto; /* Pushes clock to the right */
+            border: 1px solid;
+            border-color: #808080 #ffffff #ffffff #808080; /* Sunken */
+            padding: 2px 5px;
+            font-size: 11px;
+            min-width: 60px;
+            text-align: center;
+            min-height: 18px; /* Consistent height */
+        }
+
+         /* --- Initial Connect Dialog (Centered) --- */
+        #connect-container {
+            text-align: center;
+            background-color: #C0C0C0;
+            padding: 20px;
+            border: 2px solid;
+            border-color: #ffffff #808080 #808080 #ffffff;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            position: absolute; /* Center it */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20; /* Above desktop, below window maybe? */
+        }
+
     </style>
 </head>
 <body>
 
+    
     <div id="connect-container">
         <p>Click Connect to access WeatherNET 95</p>
         <button id="connect-button" class="win95-button">Connect</button>
     </div>
 
     
-    <div id="win95-window">
-        <div class="title-bar">
+    <div id="win95-window"> 
+        <div class="title-bar"> 
              <div class="title-bar-text">
                  <span class="title-icon"></span> 
                  <span id="window-title-text">WeatherNET 95 - Idle</span>
@@ -247,7 +299,7 @@
             </div>
         </div>
 
-        <div class="window-body">
+        <div class="window-body"> 
             
             <div id="connection-status"> 
                  <div id="connection-icon-area">
@@ -303,14 +355,13 @@
             <div id="weather-display"> 
                 <h2>
                     <svg class="weather-icon" id="weather-condition-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                        
                         <path d="M41.5 21C39.51 14.84 33.27 10 26 10c-7.73 0-14 6.27-14 14 0 .76.07 1.51.21 2.24C6.79 27.2 2 32.28 2 38.5 2 45.4 7.6 51 14.5 51h31C52.95 51 59 44.95 59 37.5c0-6.97-5.16-12.74-11.94-13.75C45.38 22.4 43.6 21.34 41.5 21z" fill="#B0B0B0" stroke="#808080" stroke-width="2"/>
                     </svg>
                     Weather Report
                 </h2>
                 <p><strong>Location:</strong> <span id="location">Loading...</span></p>
                 <p><strong>Date:</strong> <span id="weather-date">Loading...</span></p>
-                <div class="status-bar">
+                <div class="status-bar"> 
                     <p class="status-bar-field" id="condition">Condition: --</p>
                     <p class="status-bar-field" id="temp">Temp: --°F</p>
                     <p class="status-bar-field" id="humidity">Humidity: --%</p>
@@ -318,9 +369,22 @@
                 <p id="data-notice" class="notice">*Specific historical weather data for 1995 is based on researched records, not a live API.</p>
             </div>
 
-             <div class="status-bar main-status">
+             
+             <div class="main-status"> 
                 <p class="status-bar-field" id="app-status">Idle</p>
             </div>
+        </div>
+    </div>
+
+    
+    <div id="taskbar">
+        <button id="start-button">
+            <span id="start-icon"></span>Start
+        </button>
+        <span id="taskbar-divider"></span>
+        
+        <div id="clock-area">
+            <span id="clock-time">0:00 AM</span>
         </div>
     </div>
 
@@ -338,10 +402,11 @@
             const connectContainer = document.getElementById('connect-container');
             const connectButton = document.getElementById('connect-button');
             const win95Window = document.getElementById('win95-window');
+            const titleBar = win95Window.querySelector('.title-bar'); // For dragging
             // Connection Status Elements
-            const connectionStatusDiv = document.getElementById('connection-status'); // Main container for the new UI
+            const connectionStatusDiv = document.getElementById('connection-status');
             const connectionIconArea = document.getElementById('connection-icon-area');
-            const connectionStatusLine = document.getElementById('connection-status-line').querySelector('span'); // Target the span for text updates
+            const connectionStatusLine = document.getElementById('connection-status-line').querySelector('span');
             const connectedInfoDiv = document.getElementById('connected-info');
             const connectionDurationSpan = document.getElementById('connection-duration');
             const cancelButton = document.getElementById('cancel-button');
@@ -358,41 +423,93 @@
             const appStatus = document.getElementById('app-status');
             const weatherConditionIcon = document.getElementById('weather-condition-icon');
             const dialupAudio = document.getElementById('dialup-audio');
+            const clockTimeSpan = document.getElementById('clock-time');
 
-            const DEFAULT_SIMULATION_TIME = 15; // Default time in seconds if audio fails
-            const RAS_SERVICE_NAME = "WeatherNET RAS"; // Placeholder name
+            const DEFAULT_SIMULATION_TIME = 15;
+            const RAS_SERVICE_NAME = "WeatherNET RAS";
 
-            // --- Dial-Up Simulation Text Steps ---
-            // These will now update the single status line
-            const dialUpTextSteps = [
-                "Dialing...",
-                "Connecting...", // Simplified steps
-                "Logging on to network...",
-                "Connected!" // Final internal state
-            ];
+            const dialUpTextSteps = ["Dialing...", "Connecting...", "Logging on to network...", "Connected!"];
 
-            let durationInterval = null; // To hold the setInterval ID for the duration timer
+            let durationInterval = null;
             let connectionStartTime = null;
+            let clockInterval = null;
 
-            // --- Function to format seconds into HHH:MM:SS ---
+            // --- Window Dragging Logic ---
+            let isDragging = false;
+            let dragStartX, dragStartY;
+            let windowStartX, windowStartY;
+
+            titleBar.addEventListener('mousedown', (e) => {
+                // Prevent dragging if clicking on buttons within the title bar
+                if (e.target.closest('.title-bar-controls button')) {
+                    return;
+                }
+                isDragging = true;
+                dragStartX = e.clientX;
+                dragStartY = e.clientY;
+                windowStartX = win95Window.offsetLeft;
+                windowStartY = win95Window.offsetTop;
+                titleBar.style.cursor = 'grabbing'; // Change cursor while dragging
+                // Add listeners to the whole document for smoother dragging
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+            });
+
+            function handleMouseMove(e) {
+                if (!isDragging) return;
+                const dx = e.clientX - dragStartX;
+                const dy = e.clientY - dragStartY;
+                // Calculate new window position, ensuring it stays somewhat within bounds
+                let newLeft = windowStartX + dx;
+                let newTop = windowStartY + dy;
+
+                // Basic boundary check (prevent dragging completely off-screen)
+                const maxLeft = window.innerWidth - win95Window.offsetWidth - 5; // 5px buffer
+                const maxTop = window.innerHeight - win95Window.offsetHeight - 30; // Account for taskbar
+
+                newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+                newTop = Math.max(0, Math.min(newTop, maxTop));
+
+
+                win95Window.style.left = `${newLeft}px`;
+                win95Window.style.top = `${newTop}px`;
+            }
+
+            function handleMouseUp() {
+                if (isDragging) {
+                    isDragging = false;
+                    titleBar.style.cursor = 'grab'; // Reset cursor
+                    // Remove document-level listeners
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                }
+            }
+            // --- End Window Dragging Logic ---
+
+
+            // --- Clock Update ---
+            function updateClock() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                clockTimeSpan.textContent = timeString;
+            }
+
+            // --- Format Duration ---
             function formatDuration(totalSeconds) {
                 const hours = Math.floor(totalSeconds / 3600);
                 const minutes = Math.floor((totalSeconds % 3600) / 60);
                 const seconds = Math.floor(totalSeconds % 60);
-                // Pad with leading zeros
                 const hhh = String(hours).padStart(3, '0');
                 const mm = String(minutes).padStart(2, '0');
                 const ss = String(seconds).padStart(2, '0');
                 return `${hhh}:${mm}:${ss}`;
             }
 
-            // --- Function to update connection icon ---
+            // --- Update Connection Icon ---
             function updateConnectionIcon(state) {
-                 // Hide all dynamic parts first
                  svgLine.style.display = 'none';
                  svgError.style.display = 'none';
                  svgWaves.style.display = 'none';
-
                  switch(state) {
                      case 'dialing':
                      case 'connecting':
@@ -404,105 +521,85 @@
                      case 'connected':
                          svgWaves.style.display = 'block';
                          break;
-                     case 'idle': // Initial state
-                     default:
-                         // Maybe show just the static line or nothing dynamic
+                     case 'idle': default:
                          svgLine.style.display = 'block';
-                         svgLine.setAttribute('stroke-dasharray', 'none'); // Solid line for idle?
+                         svgLine.setAttribute('stroke-dasharray', 'none');
                          break;
                  }
             }
 
-
-            // --- Function to run the simulation steps ---
+            // --- Run Simulation Steps ---
             function runSimulationSteps(duration) {
                 console.log(`Starting simulation with duration: ${duration} seconds`);
-                const stepInterval = (duration * 1000) / dialUpTextSteps.length; // Interval in ms
+                const stepInterval = (duration * 1000) / dialUpTextSteps.length;
 
-                // Clear previous duration timer if any
                 if (durationInterval) clearInterval(durationInterval);
-                connectionStartTime = Date.now(); // Record start time
+                connectionStartTime = Date.now();
 
-                // Initial state
                 updateConnectionIcon('dialing');
                 windowTitleText.textContent = `Connecting to ${RAS_SERVICE_NAME}...`;
 
                 dialUpTextSteps.forEach((text, index) => {
                     setTimeout(() => {
                         console.log(`Displaying step ${index}: ${text}`);
-                        connectionStatusLine.textContent = text; // Update the status line text
-                        appStatus.textContent = text; // Update main status bar
+                        connectionStatusLine.textContent = text;
+                        appStatus.textContent = text;
 
-                         // Update icon based on step
                         if (text.includes("Connecting")) {
                             updateConnectionIcon('connecting');
-                            svgLine.setAttribute('stroke-dasharray', '3 3'); // Dashed line
+                            svgLine.setAttribute('stroke-dasharray', '3 3');
                         } else if (text.includes("Logging on")) {
-                             updateConnectionIcon('connecting'); // Still connecting state visually
-                             svgLine.setAttribute('stroke-dasharray', '1 2'); // Faster dash?
+                             updateConnectionIcon('connecting');
+                             svgLine.setAttribute('stroke-dasharray', '1 2');
                         }
 
-
-                        // If it's the last step ("Connected!")
-                        if (index === dialUpTextSteps.length - 1) {
+                        if (index === dialUpTextSteps.length - 1) { // "Connected!"
                             updateConnectionIcon('connected');
                             windowTitleText.textContent = `Connected to ${RAS_SERVICE_NAME}`;
                             appStatus.textContent = "Connected";
-                            connectionStatusLine.textContent = ''; // Clear the status line
-                            connectedInfoDiv.style.display = 'block'; // Show connected info
-                            
-                            // Hide Cancel, show Disconnect/Details
+                            connectionStatusLine.textContent = '';
+                            connectedInfoDiv.style.display = 'block';
                             cancelButton.style.display = 'none';
                             disconnectButton.style.display = 'inline-flex';
                             detailsButton.style.display = 'inline-flex';
 
-                            // Start duration timer
                             durationInterval = setInterval(() => {
                                 const elapsedSeconds = (Date.now() - connectionStartTime) / 1000;
                                 connectionDurationSpan.textContent = formatDuration(elapsedSeconds);
                             }, 1000);
 
-                            // Fetch weather shortly after showing connected state
-                            setTimeout(() => {
-                                // Keep connection panel visible, just fetch weather
-                                fetchAndDisplayHistoricalWeather();
-                            }, 500);
+                            setTimeout(fetchAndDisplayHistoricalWeather, 500);
                         }
                     }, index * stepInterval);
                 });
             }
 
-
             // --- Weather Fetching and Display ---
             function fetchAndDisplayHistoricalWeather() {
+                // (This function remains largely the same)
                 const location = "New York, NY";
                 const today = new Date();
                 const historicalDate = new Date(today);
                 historicalDate.setFullYear(1995);
-
                 const formattedDate = historicalDate.toLocaleDateString('en-US', {
                     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
                 });
-
                 const simulatedWeather = {
                     condition: "Partly Cloudy, Cool", tempF: 50, humidity: 60
                 };
-                updateWeatherIcon(simulatedWeather.condition);
-
-                // Display weather below the connection status
+                updateWeatherIconUI(simulatedWeather.condition); // Renamed to avoid conflict
                 document.getElementById('location').textContent = location;
                 document.getElementById('weather-date').textContent = formattedDate;
                 document.getElementById('condition').textContent = `Condition: ${simulatedWeather.condition}`;
                 document.getElementById('temp').textContent = `Temp: ${simulatedWeather.tempF}°F`;
                 document.getElementById('humidity').textContent = `Humidity: ${simulatedWeather.humidity}%`;
-
-                weatherDisplayDiv.style.display = 'block'; // Show weather panel
-                appStatus.textContent = "Weather data loaded."; // Update status bar
+                weatherDisplayDiv.style.display = 'block';
+                appStatus.textContent = "Weather data loaded.";
             }
 
-            // --- Helper to Update Weather Icon ---
-            function updateWeatherIcon(condition) {
-                // (This function remains the same as before)
+            // --- Helper to Update Weather Icon UI ---
+            function updateWeatherIconUI(condition) {
+                // (This function remains the same)
                  let iconSvg = '';
                 const lowerCondition = condition.toLowerCase();
                  if (lowerCondition.includes("cloudy")) {
@@ -518,92 +615,64 @@
                 weatherConditionIcon.innerHTML = iconSvg;
             }
 
-            // --- Handle Audio Loading Success ---
+            // --- Audio Handling ---
             function handleAudioLoad() {
                  if (dialupAudio.duration && !isNaN(dialupAudio.duration)) {
                     console.log(`Audio loaded. Duration: ${dialupAudio.duration} seconds.`);
                     dialupAudio.play().catch(e => {
-                         console.error("Audio play failed:", e);
-                         displayAudioError("Could not play audio.");
-                         runSimulationSteps(DEFAULT_SIMULATION_TIME); // Fallback timing
+                         console.error("Audio play failed:", e); displayAudioError("Could not play audio.");
+                         runSimulationSteps(DEFAULT_SIMULATION_TIME);
                     });
                     runSimulationSteps(dialupAudio.duration);
                 } else {
-                    console.warn("Audio duration not available after metadata load.");
-                    displayAudioError("Could not get audio duration.");
+                    console.warn("Audio duration not available."); displayAudioError("Could not get audio duration.");
                     runSimulationSteps(DEFAULT_SIMULATION_TIME);
                 }
             }
-
-             // --- Handle Audio Loading Errors ---
              function handleAudioError(e) {
-                console.error("Error loading audio:", e);
-                displayAudioError("Failed to load dial-up sound (Network/CORS issue?).");
-                updateConnectionIcon('error'); // Show error icon
-                runSimulationSteps(DEFAULT_SIMULATION_TIME);
+                console.error("Error loading audio:", e); displayAudioError("Failed to load dial-up sound.");
+                updateConnectionIcon('error'); runSimulationSteps(DEFAULT_SIMULATION_TIME);
              }
-
              function displayAudioError(message) {
-                 // Display error in the main status line now
-                 connectionStatusLine.innerHTML = `<span class="error-notice">${message}</span>`;
+                 connectionStatusLine.innerHTML = `<span class="error-notice">${message} Using default timing...</span>`;
                  appStatus.textContent = "Connection Error";
              }
-
-             // Add error handler to the audio element
              dialupAudio.addEventListener('error', handleAudioError);
 
-
-            // --- Event Listener for Connect Button ---
+            // --- Connect Button Action ---
             connectButton.addEventListener('click', () => {
-                // Hide connect button and show the main window
                 connectContainer.style.display = 'none';
-                win95Window.style.display = 'flex';
-
-                // Prepare the connection status panel
+                win95Window.style.display = 'flex'; // Show the main window
                 connectionStatusLine.textContent = 'Preparing connection...';
                 appStatus.textContent = "Preparing...";
                 windowTitleText.textContent = `Connecting to ${RAS_SERVICE_NAME}...`;
-                updateConnectionIcon('idle'); // Set initial icon state
-                connectedInfoDiv.style.display = 'none'; // Ensure connected info is hidden
-                cancelButton.style.display = 'inline-flex'; // Show cancel button
+                updateConnectionIcon('idle');
+                connectedInfoDiv.style.display = 'none';
+                cancelButton.style.display = 'inline-flex';
                 disconnectButton.style.display = 'none';
                 detailsButton.style.display = 'none';
+                weatherDisplayDiv.style.display = 'none'; // Hide weather initially
 
-
-                // Try to load and play the audio
-                if (dialupAudio.readyState >= 1) { // HAVE_METADATA or more
-                     handleAudioLoad();
-                } else {
-                    console.log("Audio metadata not ready, waiting for 'loadedmetadata' event...");
+                if (dialupAudio.readyState >= 1) { handleAudioLoad(); }
+                else {
                     dialupAudio.addEventListener('loadedmetadata', handleAudioLoad, { once: true });
                      setTimeout(() => {
                          if (dialupAudio.readyState < 1) {
-                             console.warn("Timeout waiting for audio metadata.");
-                             // Make sure the listener is removed before calling error handler
                              dialupAudio.removeEventListener('loadedmetadata', handleAudioLoad);
                              handleAudioError(new Error("Timeout waiting for metadata"));
                          }
-                     }, 5000); // 5 second timeout
+                     }, 5000);
                 }
             });
 
-             // --- Add dummy handlers for new buttons ---
-             // (These don't do anything functional yet)
-             cancelButton.addEventListener('click', () => {
-                 console.log("Cancel clicked (non-functional)");
-                 // In a real app, this would stop the connection attempt
-                 // For simulation, maybe stop audio and timers, reset UI
-             });
-             disconnectButton.addEventListener('click', () => {
-                 console.log("Disconnect clicked (non-functional)");
-                 // In a real app, this would terminate the connection
-                 // For simulation, maybe stop duration timer, reset UI to idle/disconnected
-             });
-             detailsButton.addEventListener('click', () => {
-                 console.log("Details clicked (non-functional)");
-                 // In a real app, this might open another dialog with connection stats
-             });
+             // --- Dummy Button Handlers ---
+             cancelButton.addEventListener('click', () => console.log("Cancel clicked"));
+             disconnectButton.addEventListener('click', () => console.log("Disconnect clicked"));
+             detailsButton.addEventListener('click', () => console.log("Details clicked"));
 
+             // --- Initialize Clock ---
+             updateClock(); // Initial call
+             clockInterval = setInterval(updateClock, 1000); // Update every second
 
         });
     </script>
