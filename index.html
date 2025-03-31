@@ -8,146 +8,147 @@
     <style>
         /* --- Base Styles --- */
         html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden; /* Prevent scrollbars on the body */
+            height: 100%; margin: 0; padding: 0; overflow: hidden;
             font-family: 'Tahoma', 'MS Sans Serif', 'Arial', sans-serif;
-            font-size: 12px;
+            font-size: 11px;
         }
-        body {
-            background-color: #008080; /* Win95 Teal Background */
-            position: relative; /* Needed for absolute positioning of window */
-        }
+        body { background-color: #008080; position: relative; }
 
         /* --- Win95 Style Button --- */
         .win95-button {
-            background-color: #C0C0C0;
-            border: 1px solid;
-            border-color: #ffffff #808080 #808080 #ffffff; /* Raised */
-            box-shadow: 1px 1px 0px 1px #000000; /* Outer black pixel */
-            padding: 3px 12px; /* Adjusted padding */
-            font-family: inherit;
-            font-size: 11px; /* Slightly smaller font */
-            cursor: pointer;
-            min-width: 75px;
-            min-height: 23px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            vertical-align: middle;
-            box-sizing: border-box;
+            background-color: #C0C0C0; border: 1px solid;
+            border-color: #ffffff #808080 #808080 #ffffff;
+            box-shadow: 1px 1px 0px 1px #000000; padding: 3px 12px;
+            font-family: inherit; font-size: 11px; cursor: pointer;
+            min-width: 75px; min-height: 23px; display: inline-flex;
+            align-items: center; justify-content: center; text-align: center;
+            vertical-align: middle; box-sizing: border-box;
         }
         .win95-button:active {
-            border-color: #808080 #ffffff #ffffff #808080; /* Sunken */
-            box-shadow: none; /* Remove outer shadow on press */
-            background-color: #e0e0e0; /* Slightly darker background */
-            padding: 4px 11px 2px 13px; /* Shift text slightly */
+            border-color: #808080 #ffffff #ffffff #808080; box-shadow: none;
+            background-color: #e0e0e0; padding: 4px 11px 2px 13px;
         }
-        .win95-button:focus {
-            outline: 1px dotted #000000;
-            outline-offset: -4px; /* Inside the button */
-        }
-         /* Special style for Details button focus */
+        .win95-button:focus { outline: 1px dotted #000000; outline-offset: -4px; }
         .details-button:focus {
-            /* Draw dotted border inside */
             box-shadow: 1px 1px 0px 1px #000000, inset 0 0 0 1px #C0C0C0, inset 1px 1px 0 1px #000;
-            border: 1px dotted #000;
-            outline: none;
-            padding: 3px 12px; /* Keep padding consistent */
+            border: 1px dotted #000; outline: none; padding: 3px 12px;
         }
 
+        /* --- Desktop Icons --- */
+        #desktop-icons {
+            position: absolute; top: 15px; left: 15px; display: flex;
+            flex-direction: column; flex-wrap: wrap; align-content: flex-start;
+            gap: 15px; height: calc(100% - 45px); max-width: calc(100% - 30px);
+            z-index: 5;
+        }
+        .desktop-icon {
+            width: 70px; padding: 5px 0; display: flex; flex-direction: column;
+            align-items: center; text-align: center; cursor: pointer; user-select: none;
+        }
+        .desktop-icon img {
+            width: 32px; height: 32px; margin-bottom: 5px;
+            image-rendering: pixelated; image-rendering: crisp-edges;
+        }
+        .desktop-icon span {
+            color: white; font-size: 11px; line-height: 1.2;
+            text-shadow: 1px 1px 1px #000000; background-color: transparent;
+            padding: 1px 2px; word-wrap: break-word;
+        }
+        .desktop-icon.selected span { background-color: #000080; color: white; text-shadow: none; }
 
-        /* --- Main Window Styling --- */
-        #win95-window {
-            width: 90%;
-            max-width: 480px;
-            min-width: 350px;
+        /* --- Generic Window Styling (for dynamic windows) --- */
+        .win95-window { /* Base class for all windows */
             background-color: #C0C0C0;
-             /* More accurate Win95 border */
-            border-top: 2px solid #ffffff;
-            border-left: 2px solid #ffffff;
-            border-right: 2px solid #808080;
-            border-bottom: 2px solid #808080;
-            box-shadow: 1px 1px 0 1px #000000; /* Outer black pixel */
-            padding: 1px; /* Inner padding for title bar */
-            display: flex;
-            flex-direction: column;
-            position: absolute; /* Make it draggable */
-            top: 50px; /* Initial position */
-            left: 50px;
+            border-top: 2px solid #ffffff; border-left: 2px solid #ffffff;
+            border-right: 2px solid #808080; border-bottom: 2px solid #808080;
+            box-shadow: 1px 1px 0 1px #000000; padding: 1px;
+            display: flex; flex-direction: column; position: absolute;
+            min-width: 250px; /* Min size for new windows */
+            min-height: 150px;
             display: none; /* Hidden initially */
-            z-index: 10; /* Ensure it's above connect container */
+        }
+        /* Specific styles for the Weather App window */
+        #win95-window {
+            max-width: 480px; min-width: 350px; top: 50px; left: 150px;
         }
 
         /* --- Title Bar --- */
         .title-bar {
-            background: linear-gradient(to right, #000080, #1084d0);
-            color: white;
-            padding: 2px 4px; /* Adjusted padding */
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 18px; /* More accurate height */
-            margin-bottom: 1px; /* Space before inner border */
-            flex-shrink: 0;
-            cursor: grab; /* Indicate draggable */
-            user-select: none; /* Prevent text selection when dragging */
+            background: linear-gradient(to right, #000080, #1084d0); /* Default: Active Blue */
+            color: white; padding: 2px 4px; display: flex;
+            justify-content: space-between; align-items: center; height: 18px;
+            margin-bottom: 1px; flex-shrink: 0; cursor: grab; user-select: none;
         }
-        .title-bar:active {
-             cursor: grabbing;
+         /* Style for inactive windows */
+        .win95-window:not(.active) .title-bar {
+             background: linear-gradient(to right, #808080, #c0c0c0); /* Inactive Gray */
+             color: #c0c0c0; /* Dimmed text */
         }
+        .win95-window:not(.active) .title-bar .title-icon {
+             /* Optional: Dim icon */
+             opacity: 0.7;
+        }
+
+        .title-bar:active { cursor: grabbing; }
         .title-bar-text {
-            font-weight: bold;
-            font-size: 11px; /* Accurate font size */
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: flex;
-            align-items: center;
+            font-weight: bold; font-size: 11px; letter-spacing: 0.5px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            display: flex; align-items: center;
         }
         .title-icon {
              width: 16px; height: 16px; margin-right: 3px;
-             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23C0C0C0"><path d="M1 3h2v2H1zM4 3h2v2H4zM7 3h2v2H7zM1 6h2v2H1zM4 6h2v2H4zM7 6h2v2H7zM1 9h2v2H1zM4 9h2v2H4zM7 9h2v2H7zM11 1v1H9v1h2v1h1V3h2V2h-2V1zM11 5v1h-1v1h1v1h1V7h1V6h-1V5zM11 9v1h-1v1h1v1h1v-1h1v-1h-1V9z"/></svg>');
              background-repeat: no-repeat; background-size: contain; flex-shrink: 0;
+             /* Default icon can be set here or per window */
         }
+        /* Default title icon */
+        .title-icon {
+             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23C0C0C0"><path d="M1 3h2v2H1zM4 3h2v2H4zM7 3h2v2H7zM1 6h2v2H1zM4 6h2v2H4zM7 6h2v2H7zM1 9h2v2H1zM4 9h2v2H4zM7 9h2v2H7zM11 1v1H9v1h2v1h1V3h2V2h-2V1zM11 5v1h-1v1h1v1h1V7h1V6h-1V5zM11 9v1h-1v1h1v1h1v-1h1v-1h-1V9z"/></svg>');
+        }
+         /* Weather App specific icon */
+        #win95-window .title-icon {
+             /* Can override if needed, but default is fine */
+        }
+
         /* Window Control Buttons */
         .title-bar-controls { flex-shrink: 0; }
         .title-bar-controls button {
-            width: 16px; height: 14px; /* Accurate size */
-            margin-left: 2px;
+            width: 16px; height: 14px; margin-left: 2px;
             background-color: #C0C0C0; border: 1px solid;
             border-color: #ffffff #808080 #808080 #ffffff;
-            box-shadow: 1px 1px 0 0 #000000; /* Black pixel shadow */
+            box-shadow: 1px 1px 0 0 #000000;
             font-family: 'Marlett', 'System', sans-serif; font-size: 10px; font-weight: bold;
-            padding: 0; line-height: 12px; /* Adjust line height */
-            color: black; cursor: default;
+            padding: 0; line-height: 12px; color: black;
             display: inline-flex; justify-content: center; align-items: center;
+            cursor: default; /* Make close button clickable later */
+        }
+        .title-bar-controls button.close-button {
+             cursor: pointer; /* Indicate clickable */
         }
         .title-bar-controls button:active {
              border-color: #808080 #ffffff #ffffff #808080; box-shadow: none;
-             padding-top: 1px; padding-left: 1px; /* Shift content on press */
+             padding-top: 1px; padding-left: 1px;
         }
 
         /* --- Window Body --- */
         .window-body {
-            background-color: #C0C0C0;
-            padding: 10px;
-            min-height: 150px;
-            /* Inner border effect */
-            border-top: 1px solid #808080;
-            border-left: 1px solid #808080;
-            border-right: 1px solid #ffffff;
-            border-bottom: 1px solid #ffffff;
-            flex-grow: 1;
-            overflow-y: auto;
-            margin-bottom: 25px; /* Space for status bar */
-            position: relative;
+            background-color: #C0C0C0; padding: 10px; min-height: 100px; /* Reduced min-height */
+            border-top: 1px solid #808080; border-left: 1px solid #808080;
+            border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff;
+            flex-grow: 1; overflow: auto; /* Changed to auto */
+            position: relative; /* Needed for status bar in weather app */
         }
+         /* Weather app needs space for its status bar */
+        #win95-window .window-body {
+             margin-bottom: 25px;
+        }
+         /* Placeholder window content style */
+         .placeholder-content {
+             padding: 10px;
+             font-size: 11px;
+         }
 
-        /* --- Connection Status Panel Layout --- */
+
+        /* --- Connection Status Panel Layout (Weather App Specific) --- */
         #connection-status {
             display: flex; align-items: flex-start;
             padding: 15px 10px; min-height: 80px; margin-bottom: 10px;
@@ -165,14 +166,13 @@
         #connection-text-area { margin-bottom: 10px; }
         #connection-status-line, #connected-info p {
             margin: 3px 0; font-family: 'Tahoma', 'MS Sans Serif', 'Arial', sans-serif;
-            font-size: 11px; /* Match button font size */
+            font-size: 11px;
         }
          #connected-info { display: none; }
         #connection-button-area { align-self: flex-end; display: flex; gap: 5px; }
         #disconnect-button, #details-button { display: none; }
 
-
-        /* --- Weather Display Area --- */
+        /* --- Weather Display Area (Weather App Specific) --- */
         #weather-display { display: none; }
         #weather-display h2 {
             margin-top: 0; font-size: 13px; border-bottom: 1px dotted #808080;
@@ -181,16 +181,15 @@
         .weather-icon { width: 24px; height: 24px; margin-right: 8px; }
         #weather-display p { margin: 8px 0; font-size: 11px; }
 
-        /* --- Main App Status Bar --- */
+        /* --- Main App Status Bar (Weather App Specific) --- */
         .main-status {
-            position: absolute; bottom: 1px; left: 1px; right: 1px; /* Inside window body padding */
+            position: absolute; bottom: 1px; left: 1px; right: 1px;
             margin-top: 0; height: 20px; box-sizing: border-box;
-            border: 1px solid; border-color: #808080 #ffffff #ffffff #808080; /* Sunken */
+            border: 1px solid; border-color: #808080 #ffffff #ffffff #808080;
             padding: 1px 2px; display: flex; background-color: #C0C0C0;
         }
         .status-bar-field {
           flex: 1; margin: 0 1px; padding: 0 4px;
-          /* Inner bevel effect */
           border-right: 1px solid #808080; border-bottom: 1px solid #808080;
           border-left: 1px solid #ffffff; border-top: 1px solid #ffffff;
           font-size: 11px; line-height: 16px; overflow: hidden;
@@ -204,75 +203,36 @@
 
         /* --- Taskbar --- */
         #taskbar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 28px; /* Standard taskbar height */
-            background-color: #C0C0C0;
-            border-top: 2px solid #ffffff; /* Raised effect */
-            box-sizing: border-box;
-            display: flex;
-            align-items: center;
-            padding: 2px;
-            z-index: 100; /* Above windows */
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 28px;
+            background-color: #C0C0C0; border-top: 2px solid #ffffff;
+            box-sizing: border-box; display: flex; align-items: center;
+            padding: 2px; z-index: 100;
         }
         #start-button {
-            background-color: #C0C0C0;
-            border: 1px solid;
+            background-color: #C0C0C0; border: 1px solid;
             border-color: #ffffff #808080 #808080 #ffffff;
-            box-shadow: 1px 1px 0px 1px #000000;
-            padding: 2px 6px;
-            font-weight: bold;
-            font-size: 11px;
-            display: flex;
-            align-items: center;
-            margin-right: 4px;
-            cursor: default; /* Non-functional */
-            min-height: 22px;
+            box-shadow: 1px 1px 0px 1px #000000; padding: 2px 6px;
+            font-weight: bold; font-size: 11px; display: flex; align-items: center;
+            margin-right: 4px; cursor: default; min-height: 22px;
         }
         #start-button:active {
-            border-color: #808080 #ffffff #ffffff #808080;
-            box-shadow: none;
+            border-color: #808080 #ffffff #ffffff #808080; box-shadow: none;
             padding: 3px 5px 1px 7px;
         }
         #start-icon {
              width: 16px; height: 16px; margin-right: 4px;
-             /* Simplified Win95 logo */
              background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="%23FF0000" d="M1 1h6v6H1z"/><path fill="%2300FF00" d="M8 1h7v6H8z"/><path fill="%230000FF" d="M1 8h6v7H1z"/><path fill="%23FFFF00" d="M8 8h7v7H8z"/></svg>');
              background-size: contain;
         }
         #taskbar-divider {
-            height: 22px;
-            width: 1px;
-            border-left: 1px solid #808080;
-            border-right: 1px solid #ffffff;
-            margin: 0 4px;
+            height: 22px; width: 1px; border-left: 1px solid #808080;
+            border-right: 1px solid #ffffff; margin: 0 4px;
         }
         #clock-area {
-            margin-left: auto; /* Pushes clock to the right */
-            border: 1px solid;
-            border-color: #808080 #ffffff #ffffff #808080; /* Sunken */
-            padding: 2px 5px;
-            font-size: 11px;
-            min-width: 60px;
-            text-align: center;
-            min-height: 18px; /* Consistent height */
-        }
-
-         /* --- Initial Connect Dialog (Centered) --- */
-        #connect-container {
-            text-align: center;
-            background-color: #C0C0C0;
-            padding: 20px;
-            border: 2px solid;
-            border-color: #ffffff #808080 #808080 #ffffff;
-            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            position: absolute; /* Center it */
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 20; /* Above desktop, below window maybe? */
+            margin-left: auto; border: 1px solid;
+            border-color: #808080 #ffffff #ffffff #808080;
+            padding: 2px 5px; font-size: 11px; min-width: 60px;
+            text-align: center; min-height: 18px;
         }
 
     </style>
@@ -280,13 +240,36 @@
 <body>
 
     
-    <div id="connect-container">
-        <p>Click Connect to access WeatherNET 95</p>
-        <button id="connect-button" class="win95-button">Connect</button>
+    <div id="desktop-icons">
+        
+        <div class="desktop-icon" id="my-computer-icon" data-title="My Computer" data-content="<p>Contents of My Computer (C:)</p><ul><li>3½ Floppy (A:)</li><li>Hard Disk (C:)</li><li>Control Panel</li><li>Printers</li></ul>">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='4' y='6' width='24' height='20' fill='%23c0c0c0' stroke='%23000' stroke-width='1'/><rect x='6' y='8' width='20' height='14' fill='%23000080'/><rect x='10' y='19' width='12' height='5' fill='%23808080' stroke='%23000' stroke-width='1'/><rect x='12' y='20' width='8' height='1' fill='%23c0c0c0'/></svg>" alt="My Computer">
+            <span>My Computer</span>
+        </div>
+        
+        <div class="desktop-icon" id="network-icon" data-title="Network Neighborhood" data-content="<p>Contents of Network Neighborhood:</p><ul><li>Entire Network</li></ul>">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='4' y='10' width='10' height='8' fill='%23c0c0c0' stroke='%23000'/><rect x='18' y='10' width='10' height='8' fill='%23c0c0c0' stroke='%23000'/><path d='M9 18v4h14v-4' stroke='%23000' fill='none'/><path d='M14 12h4v4h-4z' fill='%23c0c0c0' stroke='%23000'/></svg>" alt="Network">
+            <span>Network Neighborhood</span>
+        </div>
+        
+        <div class="desktop-icon" id="recycle-bin-icon" data-title="Recycle Bin" data-content="<p>Recycle Bin is empty.</p>">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M10 4h12v2H10z' fill='%23c0c0c0' stroke='%23000'/><path d='M12 7h8v20h-8z' fill='%23c0c0c0' stroke='%23000'/><path d='M8 9h16v2H8z' fill='%23c0c0c0' stroke='%23000'/></svg>" alt="Recycle Bin">
+            <span>Recycle Bin</span>
+        </div>
+        
+        <div class="desktop-icon" id="internet-icon" data-title="The Internet" data-content="<p>Internet Connection Wizard</p><button class='win95-button' disabled>Connect</button>">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='13' fill='%234169e1' stroke='%23000'/><path d='M16 3a13 13 0 000 26 13 13 0 000-26zm-4 13a4 4 0 014-4 4 4 0 014 4 4 4 0 01-4 4 4 4 0 01-4-4z' fill='none' stroke='%23fff' stroke-width='2'/><ellipse cx='16' cy='16' rx='8' ry='3' stroke='%23fff' stroke-width='1.5' fill='none'/></svg>" alt="Internet">
+            <span>The Internet</span>
+        </div>
+        
+        <div class="desktop-icon" id="weather-app-icon" title="WeatherNET 95">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='2' y='2' width='28' height='28' fill='%23c0c0c0' stroke='%23000'/><circle cx='18' cy='12' r='6' fill='yellow' stroke='orange'/><path d='M8 18h20v8H8z' fill='lightblue'/><path d='M10 20h4v4h-4z M16 20h4v4h-4z M22 20h4v4h-4z' fill='white'/></svg>" alt="WeatherNET 95">
+            <span>WeatherNET 95</span>
+        </div>
     </div>
 
     
-    <div id="win95-window"> 
+    <div id="win95-window" class="win95-window"> 
         <div class="title-bar"> 
              <div class="title-bar-text">
                  <span class="title-icon"></span> 
@@ -295,196 +278,268 @@
             <div class="title-bar-controls">
                 <button aria-label="Minimize" disabled>_</button>
                 <button aria-label="Maximize" disabled>&#9633;</button>
-                <button aria-label="Close" disabled>X</button>
+                
+                <button class="close-button" aria-label="Close">X</button>
             </div>
         </div>
-
         <div class="window-body"> 
-            
             <div id="connection-status"> 
                  <div id="connection-icon-area">
-                     
                      <svg id="connection-svg-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                         
-                         <rect x="5" y="10" width="22" height="15" fill="#C0C0C0" stroke="#000" stroke-width="1"/>
-                         <rect x="8" y="13" width="16" height="9" fill="#FFF" stroke="#808080" stroke-width="1"/>
-                         <rect x="37" y="10" width="22" height="15" fill="#C0C0C0" stroke="#000" stroke-width="1"/>
-                         <rect x="40" y="13" width="16" height="9" fill="#FFF" stroke="#808080" stroke-width="1"/>
-                         
-                         <rect x="18" y="30" width="28" height="10" fill="#C0C0C0" stroke="#000" stroke-width="1"/>
-                         <circle cx="23" cy="35" r="1.5" fill="#808080"/>
-                         <circle cx="28" cy="35" r="1.5" fill="#808080"/>
-                         <circle cx="33" cy="35" r="1.5" fill="#808080"/>
-                         <circle cx="38" cy="35" r="1.5" fill="#808080"/>
-                         <circle cx="43" cy="35" r="1.5" fill="#808080"/>
-                         
-                         <g id="connection-line" stroke="#000080" stroke-width="1.5">
-                            <line x1="16" y1="25" x2="22" y2="30"/>
-                            <line x1="48" y1="25" x2="42" y2="30"/>
-                            
-                            <line x1="22" y1="30" x2="42" y2="30" stroke-dasharray="3 3"/> 
-                         </g>
-                         <g id="connection-error" display="none" stroke="red" stroke-width="2">
-                            <line x1="25" y1="45" x2="39" y2="59"/>
-                            <line x1="39" y1="45" x2="25" y2="59"/>
-                         </g>
-                          <g id="connection-waves" display="none" stroke="#0000FF" stroke-width="1.5" fill="none">
-                               <path d="M 24 45 Q 28 42, 32 45 T 40 45" />
-                               <path d="M 24 50 Q 28 47, 32 50 T 40 50" />
-                               <path d="M 24 55 Q 28 52, 32 55 T 40 55" />
-                           </g>
+                         <rect x="5" y="10" width="22" height="15" fill="#C0C0C0" stroke="#000" stroke-width="1"/><rect x="8" y="13" width="16" height="9" fill="#FFF" stroke="#808080" stroke-width="1"/>
+                         <rect x="37" y="10" width="22" height="15" fill="#C0C0C0" stroke="#000" stroke-width="1"/><rect x="40" y="13" width="16" height="9" fill="#FFF" stroke="#808080" stroke-width="1"/>
+                         <rect x="18" y="30" width="28" height="10" fill="#C0C0C0" stroke="#000" stroke-width="1"/><circle cx="23" cy="35" r="1.5" fill="#808080"/><circle cx="28" cy="35" r="1.5" fill="#808080"/><circle cx="33" cy="35" r="1.5" fill="#808080"/><circle cx="38" cy="35" r="1.5" fill="#808080"/><circle cx="43" cy="35" r="1.5" fill="#808080"/>
+                         <g id="connection-line" stroke="#000080" stroke-width="1.5"><line x1="16" y1="25" x2="22" y2="30"/><line x1="48" y1="25" x2="42" y2="30"/><line x1="22" y1="30" x2="42" y2="30" stroke-dasharray="3 3"/> </g>
+                         <g id="connection-error" display="none" stroke="red" stroke-width="2"><line x1="25" y1="45" x2="39" y2="59"/><line x1="39" y1="45" x2="25" y2="59"/></g>
+                         <g id="connection-waves" display="none" stroke="#0000FF" stroke-width="1.5" fill="none"><path d="M 24 45 Q 28 42, 32 45 T 40 45" /><path d="M 24 50 Q 28 47, 32 50 T 40 50" /><path d="M 24 55 Q 28 52, 32 55 T 40 55" /></g>
                      </svg>
                  </div>
                  <div id="connection-details-area">
-                     <div id="connection-text-area">
-                        <p id="connection-status-line">Status: <span>Ready to connect...</span></p>
-                        <div id="connected-info">
-                            <p>Connected at <span id="connection-speed">57600</span> bps</p>
-                            <p>Duration: <span id="connection-duration">000:00:00</span></p>
-                        </div>
-                     </div>
-                     <div id="connection-button-area">
-                         <button id="cancel-button" class="win95-button">Cancel</button>
-                         <button id="disconnect-button" class="win95-button">Disconnect</button>
-                         <button id="details-button" class="win95-button details-button">Details >></button>
-                     </div>
+                     <div id="connection-text-area"><p id="connection-status-line">Status: <span>Initializing...</span></p> <div id="connected-info"><p>Connected at <span id="connection-speed">57600</span> bps</p><p>Duration: <span id="connection-duration">000:00:00</span></p></div></div>
+                     <div id="connection-button-area"><button id="cancel-button" class="win95-button">Cancel</button><button id="disconnect-button" class="win95-button">Disconnect</button><button id="details-button" class="win95-button details-button">Details >></button></div>
                  </div>
             </div>
-
-            
             <div id="weather-display"> 
-                <h2>
-                    <svg class="weather-icon" id="weather-condition-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M41.5 21C39.51 14.84 33.27 10 26 10c-7.73 0-14 6.27-14 14 0 .76.07 1.51.21 2.24C6.79 27.2 2 32.28 2 38.5 2 45.4 7.6 51 14.5 51h31C52.95 51 59 44.95 59 37.5c0-6.97-5.16-12.74-11.94-13.75C45.38 22.4 43.6 21.34 41.5 21z" fill="#B0B0B0" stroke="#808080" stroke-width="2"/>
-                    </svg>
-                    Weather Report
-                </h2>
-                <p><strong>Location:</strong> <span id="location">Loading...</span></p>
-                <p><strong>Date:</strong> <span id="weather-date">Loading...</span></p>
-                <div class="status-bar"> 
-                    <p class="status-bar-field" id="condition">Condition: --</p>
-                    <p class="status-bar-field" id="temp">Temp: --°F</p>
-                    <p class="status-bar-field" id="humidity">Humidity: --%</p>
-                </div>
+                <h2><svg class="weather-icon" id="weather-condition-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><path d="M41.5 21C39.51 14.84 33.27 10 26 10c-7.73 0-14 6.27-14 14 0 .76.07 1.51.21 2.24C6.79 27.2 2 32.28 2 38.5 2 45.4 7.6 51 14.5 51h31C52.95 51 59 44.95 59 37.5c0-6.97-5.16-12.74-11.94-13.75C45.38 22.4 43.6 21.34 41.5 21z" fill="#B0B0B0" stroke="#808080" stroke-width="2"/></svg> Weather Report</h2>
+                <p><strong>Location:</strong> <span id="location">Loading...</span></p><p><strong>Date:</strong> <span id="weather-date">Loading...</span></p>
+                <div class="status-bar"> <p class="status-bar-field" id="condition">Condition: --</p><p class="status-bar-field" id="temp">Temp: --°F</p><p class="status-bar-field" id="humidity">Humidity: --%</p></div>
                 <p id="data-notice" class="notice">*Specific historical weather data for 1995 is based on researched records, not a live API.</p>
             </div>
-
-             
-             <div class="main-status"> 
-                <p class="status-bar-field" id="app-status">Idle</p>
-            </div>
+             <div class="main-status"> <p class="status-bar-field" id="app-status">Idle</p></div>
         </div>
     </div>
 
     
     <div id="taskbar">
-        <button id="start-button">
-            <span id="start-icon"></span>Start
-        </button>
+        <button id="start-button"><span id="start-icon"></span>Start</button>
         <span id="taskbar-divider"></span>
-        
-        <div id="clock-area">
-            <span id="clock-time">0:00 AM</span>
-        </div>
+        <div id="clock-area"><span id="clock-time">0:00 AM</span></div>
     </div>
 
     
-    <audio id="dialup-audio" 
-           src="https://www.soundjay.com/communication/sounds/dial-up-modem-01.mp3" 
-           preload="auto" 
-           style="display: none;">
-           Your browser does not support the audio element.
-    </audio>
+    <audio id="dialup-audio" src="https://www.soundjay.com/communication/sounds/dial-up-modem-01.mp3" preload="auto" style="display: none;"> Your browser does not support the audio element. </audio>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // DOM Elements
-            const connectContainer = document.getElementById('connect-container');
-            const connectButton = document.getElementById('connect-button');
-            const win95Window = document.getElementById('win95-window');
-            const titleBar = win95Window.querySelector('.title-bar'); // For dragging
-            // Connection Status Elements
-            const connectionStatusDiv = document.getElementById('connection-status');
-            const connectionIconArea = document.getElementById('connection-icon-area');
+            // --- Global State & Config ---
+            const openWindows = {}; // Track open placeholder windows by ID
+            let highestZ = 10; // Initial z-index for windows
+            const DEFAULT_SIMULATION_TIME = 15;
+            const RAS_SERVICE_NAME = "WeatherNET RAS";
+            const dialUpTextSteps = ["Dialing...", "Connecting...", "Logging on to network...", "Connected!"];
+
+            // --- DOM Element References ---
+            const desktopIconsContainer = document.getElementById('desktop-icons');
+            const weatherAppIcon = document.getElementById('weather-app-icon');
+            const weatherWindow = document.getElementById('win95-window'); // Specific ref for weather app
+            const dialupAudio = document.getElementById('dialup-audio');
+            const clockTimeSpan = document.getElementById('clock-time');
+            // Weather window specific elements
+            const weatherTitleBar = weatherWindow.querySelector('.title-bar');
+            const weatherCloseButton = weatherWindow.querySelector('.close-button');
             const connectionStatusLine = document.getElementById('connection-status-line').querySelector('span');
             const connectedInfoDiv = document.getElementById('connected-info');
             const connectionDurationSpan = document.getElementById('connection-duration');
             const cancelButton = document.getElementById('cancel-button');
             const disconnectButton = document.getElementById('disconnect-button');
             const detailsButton = document.getElementById('details-button');
-            // Icon SVG parts
             const svgIcon = document.getElementById('connection-svg-icon');
             const svgLine = svgIcon.querySelector('#connection-line');
             const svgError = svgIcon.querySelector('#connection-error');
             const svgWaves = svgIcon.querySelector('#connection-waves');
-            // Other elements
             const weatherDisplayDiv = document.getElementById('weather-display');
-            const windowTitleText = document.getElementById('window-title-text');
-            const appStatus = document.getElementById('app-status');
+            const weatherWindowTitleText = document.getElementById('window-title-text');
+            const weatherAppStatus = document.getElementById('app-status');
             const weatherConditionIcon = document.getElementById('weather-condition-icon');
-            const dialupAudio = document.getElementById('dialup-audio');
-            const clockTimeSpan = document.getElementById('clock-time');
 
-            const DEFAULT_SIMULATION_TIME = 15;
-            const RAS_SERVICE_NAME = "WeatherNET RAS";
-
-            const dialUpTextSteps = ["Dialing...", "Connecting...", "Logging on to network...", "Connected!"];
-
+            // --- Timers & State ---
             let durationInterval = null;
             let connectionStartTime = null;
             let clockInterval = null;
+            let isWeatherWindowLaunched = false; // Track weather window state specifically
 
-            // --- Window Dragging Logic ---
+            // --- Generic Window Management ---
+            let dragTarget = null;
             let isDragging = false;
-            let dragStartX, dragStartY;
-            let windowStartX, windowStartY;
+            let dragStartX, dragStartY, windowStartX, windowStartY;
 
-            titleBar.addEventListener('mousedown', (e) => {
-                // Prevent dragging if clicking on buttons within the title bar
-                if (e.target.closest('.title-bar-controls button')) {
-                    return;
-                }
+            function handleDragMouseDown(e) {
+                const targetWindow = e.target.closest('.win95-window');
+                if (!targetWindow || e.target.closest('.title-bar-controls button')) return;
+
+                dragTarget = targetWindow;
+                handleWindowFocus(dragTarget); // Bring to front on drag start
+
                 isDragging = true;
-                dragStartX = e.clientX;
-                dragStartY = e.clientY;
-                windowStartX = win95Window.offsetLeft;
-                windowStartY = win95Window.offsetTop;
-                titleBar.style.cursor = 'grabbing'; // Change cursor while dragging
-                // Add listeners to the whole document for smoother dragging
-                document.addEventListener('mousemove', handleMouseMove);
-                document.addEventListener('mouseup', handleMouseUp);
-            });
+                dragStartX = e.clientX; dragStartY = e.clientY;
+                windowStartX = dragTarget.offsetLeft; windowStartY = dragTarget.offsetTop;
+                dragTarget.querySelector('.title-bar').style.cursor = 'grabbing';
+                document.addEventListener('mousemove', handleDragMouseMove);
+                document.addEventListener('mouseup', handleDragMouseUp);
+            }
 
-            function handleMouseMove(e) {
-                if (!isDragging) return;
-                const dx = e.clientX - dragStartX;
-                const dy = e.clientY - dragStartY;
-                // Calculate new window position, ensuring it stays somewhat within bounds
-                let newLeft = windowStartX + dx;
-                let newTop = windowStartY + dy;
-
-                // Basic boundary check (prevent dragging completely off-screen)
-                const maxLeft = window.innerWidth - win95Window.offsetWidth - 5; // 5px buffer
-                const maxTop = window.innerHeight - win95Window.offsetHeight - 30; // Account for taskbar
-
+            function handleDragMouseMove(e) {
+                if (!isDragging || !dragTarget) return;
+                const dx = e.clientX - dragStartX; const dy = e.clientY - dragStartY;
+                let newLeft = windowStartX + dx; let newTop = windowStartY + dy;
+                const maxLeft = window.innerWidth - dragTarget.offsetWidth - 5;
+                const maxTop = window.innerHeight - dragTarget.offsetHeight - 30;
                 newLeft = Math.max(0, Math.min(newLeft, maxLeft));
                 newTop = Math.max(0, Math.min(newTop, maxTop));
-
-
-                win95Window.style.left = `${newLeft}px`;
-                win95Window.style.top = `${newTop}px`;
+                dragTarget.style.left = `${newLeft}px`;
+                dragTarget.style.top = `${newTop}px`;
             }
 
-            function handleMouseUp() {
-                if (isDragging) {
-                    isDragging = false;
-                    titleBar.style.cursor = 'grab'; // Reset cursor
-                    // Remove document-level listeners
-                    document.removeEventListener('mousemove', handleMouseMove);
-                    document.removeEventListener('mouseup', handleMouseUp);
+            function handleDragMouseUp() {
+                if (isDragging && dragTarget) {
+                    dragTarget.querySelector('.title-bar').style.cursor = 'grab';
                 }
+                isDragging = false; dragTarget = null;
+                document.removeEventListener('mousemove', handleDragMouseMove);
+                document.removeEventListener('mouseup', handleDragMouseUp);
             }
-            // --- End Window Dragging Logic ---
+
+            function handleWindowFocus(targetWindow) {
+                if (!targetWindow) return;
+                // Remove active class from all windows
+                document.querySelectorAll('.win95-window.active').forEach(win => {
+                    win.classList.remove('active');
+                });
+                // Add active class and bring to front
+                targetWindow.classList.add('active');
+                highestZ++;
+                targetWindow.style.zIndex = highestZ;
+            }
+
+            function handleWindowClose(e) {
+                const targetWindow = e.target.closest('.win95-window');
+                if (!targetWindow) return;
+
+                // Specific cleanup for weather window
+                if (targetWindow.id === 'win95-window') {
+                     isWeatherWindowLaunched = false;
+                     dialupAudio.pause();
+                     dialupAudio.currentTime = 0;
+                     if (durationInterval) clearInterval(durationInterval);
+                     durationInterval = null;
+                     // Reset weather window UI elements if needed for relaunch
+                     resetWeatherWindowUI();
+                }
+
+                targetWindow.style.display = 'none'; // Hide instead of remove for simplicity
+                const windowId = targetWindow.getAttribute('data-window-id'); // Use data attribute
+                if (windowId && openWindows[windowId]) {
+                    delete openWindows[windowId];
+                }
+                 // Deselect corresponding desktop icon if any
+                 const iconId = targetWindow.getAttribute('data-icon-id');
+                 if (iconId) {
+                     const icon = document.getElementById(iconId);
+                     if (icon) icon.classList.remove('selected');
+                 } else if (targetWindow.id === 'win95-window') {
+                     weatherAppIcon.classList.remove('selected');
+                 }
+            }
+
+            // Reset weather window UI to initial state
+            function resetWeatherWindowUI() {
+                connectionStatusLine.textContent = 'Initializing...';
+                connectedInfoDiv.style.display = 'none';
+                cancelButton.style.display = 'inline-flex';
+                disconnectButton.style.display = 'none';
+                detailsButton.style.display = 'none';
+                weatherDisplayDiv.style.display = 'none';
+                weatherAppStatus.textContent = "Idle";
+                weatherWindowTitleText.textContent = "WeatherNET 95 - Idle";
+                updateConnectionIcon('idle'); // Reset connection icon
+            }
+
+
+            function createWindow(id, iconId, title, contentHtml, initialPos = { top: 80, left: 200 }) {
+                if (openWindows[id]) { // Check if already open
+                    handleWindowFocus(openWindows[id]); // Bring existing to front
+                    return;
+                }
+
+                const win = document.createElement('div');
+                win.className = 'win95-window'; // Use generic class
+                win.id = `window-${id}`; // Unique DOM ID
+                win.setAttribute('data-window-id', id); // Store logical ID
+                win.setAttribute('data-icon-id', iconId); // Link back to icon
+
+                win.style.top = `${initialPos.top}px`;
+                win.style.left = `${initialPos.left}px`;
+                win.style.width = '300px'; // Default size
+                win.style.height = '200px';
+
+                win.innerHTML = `
+                    <div class="title-bar">
+                        <div class="title-bar-text">
+                            <span class="title-icon"></span>
+                            <span>${title}</span>
+                        </div>
+                        <div class="title-bar-controls">
+                            <button aria-label="Minimize" disabled>_</button>
+                            <button aria-label="Maximize" disabled>&#9633;</button>
+                            <button class="close-button" aria-label="Close">X</button>
+                        </div>
+                    </div>
+                    <div class="window-body">
+                        <div class="placeholder-content">${contentHtml}</div>
+                    </div>
+                `;
+
+                document.body.appendChild(win);
+                openWindows[id] = win; // Track the window
+
+                // Add event listeners
+                const newTitleBar = win.querySelector('.title-bar');
+                const newCloseButton = win.querySelector('.close-button');
+                newTitleBar.addEventListener('mousedown', handleDragMouseDown);
+                newCloseButton.addEventListener('click', handleWindowClose);
+                win.addEventListener('mousedown', () => handleWindowFocus(win), true); // Capture phase to ensure focus on click
+
+                win.style.display = 'flex'; // Show the window
+                handleWindowFocus(win); // Focus the new window
+            }
+
+            // --- Desktop Icon Selection Logic ---
+            function deselectAllIcons() {
+                desktopIconsContainer.querySelectorAll('.desktop-icon.selected').forEach(icon => {
+                    icon.classList.remove('selected');
+                });
+            }
+            desktopIconsContainer.addEventListener('click', (e) => {
+                const clickedIcon = e.target.closest('.desktop-icon');
+                if (clickedIcon) {
+                    deselectAllIcons();
+                    clickedIcon.classList.add('selected');
+
+                    if (clickedIcon.id === 'weather-app-icon') {
+                        if (!isWeatherWindowLaunched) {
+                            launchWeatherApp();
+                        } else {
+                            handleWindowFocus(weatherWindow); // Bring existing to front
+                        }
+                    } else {
+                        // Handle other icons
+                        const windowId = clickedIcon.id.replace('-icon', '-win');
+                        const title = clickedIcon.dataset.title || 'Window';
+                        const content = clickedIcon.dataset.content || '<p>Not implemented.</p>';
+                        // Simple cascade positioning
+                        const offset = Object.keys(openWindows).length * 20;
+                        createWindow(windowId, clickedIcon.id, title, content, { top: 60 + offset, left: 180 + offset });
+                    }
+                }
+            });
+            document.body.addEventListener('click', (e) => {
+                 if (!e.target.closest('.desktop-icon') && !e.target.closest('.win95-window') && !e.target.closest('#taskbar')) {
+                     deselectAllIcons();
+                     // Optionally deactivate active window
+                      document.querySelectorAll('.win95-window.active').forEach(win => win.classList.remove('active'));
+                 }
+             });
+            // --- End Icon Selection ---
 
 
             // --- Clock Update ---
@@ -495,7 +550,7 @@
             }
 
             // --- Format Duration ---
-            function formatDuration(totalSeconds) {
+            function formatDuration(totalSeconds) { /* ... remains the same ... */
                 const hours = Math.floor(totalSeconds / 3600);
                 const minutes = Math.floor((totalSeconds % 3600) / 60);
                 const seconds = Math.floor(totalSeconds % 60);
@@ -506,68 +561,50 @@
             }
 
             // --- Update Connection Icon ---
-            function updateConnectionIcon(state) {
-                 svgLine.style.display = 'none';
-                 svgError.style.display = 'none';
-                 svgWaves.style.display = 'none';
+            function updateConnectionIcon(state) { /* ... remains the same ... */
+                 svgLine.style.display = 'none'; svgError.style.display = 'none'; svgWaves.style.display = 'none';
                  switch(state) {
-                     case 'dialing':
-                     case 'connecting':
-                         svgLine.style.display = 'block';
-                         break;
-                     case 'error':
-                         svgError.style.display = 'block';
-                         break;
-                     case 'connected':
-                         svgWaves.style.display = 'block';
-                         break;
-                     case 'idle': default:
-                         svgLine.style.display = 'block';
-                         svgLine.setAttribute('stroke-dasharray', 'none');
-                         break;
+                     case 'dialing': case 'connecting': svgLine.style.display = 'block'; break;
+                     case 'error': svgError.style.display = 'block'; break;
+                     case 'connected': svgWaves.style.display = 'block'; break;
+                     case 'idle': default: svgLine.style.display = 'block'; svgLine.setAttribute('stroke-dasharray', 'none'); break;
                  }
             }
 
-            // --- Run Simulation Steps ---
-            function runSimulationSteps(duration) {
+            // --- Run Simulation Steps (Weather App Specific) ---
+            function runSimulationSteps(duration) { /* ... remains the same ... */
                 console.log(`Starting simulation with duration: ${duration} seconds`);
                 const stepInterval = (duration * 1000) / dialUpTextSteps.length;
-
                 if (durationInterval) clearInterval(durationInterval);
                 connectionStartTime = Date.now();
-
                 updateConnectionIcon('dialing');
-                windowTitleText.textContent = `Connecting to ${RAS_SERVICE_NAME}...`;
+                weatherWindowTitleText.textContent = `Connecting to ${RAS_SERVICE_NAME}...`;
+                connectionStatusLine.textContent = 'Initializing...';
+                connectedInfoDiv.style.display = 'none';
+                cancelButton.style.display = 'inline-flex';
+                disconnectButton.style.display = 'none';
+                detailsButton.style.display = 'none';
+                weatherDisplayDiv.style.display = 'none';
 
                 dialUpTextSteps.forEach((text, index) => {
                     setTimeout(() => {
+                        if (!isWeatherWindowLaunched) return;
                         console.log(`Displaying step ${index}: ${text}`);
                         connectionStatusLine.textContent = text;
-                        appStatus.textContent = text;
-
-                        if (text.includes("Connecting")) {
-                            updateConnectionIcon('connecting');
-                            svgLine.setAttribute('stroke-dasharray', '3 3');
-                        } else if (text.includes("Logging on")) {
-                             updateConnectionIcon('connecting');
-                             svgLine.setAttribute('stroke-dasharray', '1 2');
-                        }
+                        weatherAppStatus.textContent = text;
+                        if (text.includes("Connecting")) { updateConnectionIcon('connecting'); svgLine.setAttribute('stroke-dasharray', '3 3'); }
+                        else if (text.includes("Logging on")) { updateConnectionIcon('connecting'); svgLine.setAttribute('stroke-dasharray', '1 2'); }
 
                         if (index === dialUpTextSteps.length - 1) { // "Connected!"
                             updateConnectionIcon('connected');
-                            windowTitleText.textContent = `Connected to ${RAS_SERVICE_NAME}`;
-                            appStatus.textContent = "Connected";
+                            weatherWindowTitleText.textContent = `Connected to ${RAS_SERVICE_NAME}`;
+                            weatherAppStatus.textContent = "Connected";
                             connectionStatusLine.textContent = '';
                             connectedInfoDiv.style.display = 'block';
                             cancelButton.style.display = 'none';
                             disconnectButton.style.display = 'inline-flex';
                             detailsButton.style.display = 'inline-flex';
-
-                            durationInterval = setInterval(() => {
-                                const elapsedSeconds = (Date.now() - connectionStartTime) / 1000;
-                                connectionDurationSpan.textContent = formatDuration(elapsedSeconds);
-                            }, 1000);
-
+                            durationInterval = setInterval(() => { const elapsed = (Date.now() - connectionStartTime) / 1000; connectionDurationSpan.textContent = formatDuration(elapsed); }, 1000);
                             setTimeout(fetchAndDisplayHistoricalWeather, 500);
                         }
                     }, index * stepInterval);
@@ -575,104 +612,83 @@
             }
 
             // --- Weather Fetching and Display ---
-            function fetchAndDisplayHistoricalWeather() {
-                // (This function remains largely the same)
-                const location = "New York, NY";
-                const today = new Date();
-                const historicalDate = new Date(today);
-                historicalDate.setFullYear(1995);
-                const formattedDate = historicalDate.toLocaleDateString('en-US', {
-                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-                });
-                const simulatedWeather = {
-                    condition: "Partly Cloudy, Cool", tempF: 50, humidity: 60
-                };
-                updateWeatherIconUI(simulatedWeather.condition); // Renamed to avoid conflict
-                document.getElementById('location').textContent = location;
-                document.getElementById('weather-date').textContent = formattedDate;
-                document.getElementById('condition').textContent = `Condition: ${simulatedWeather.condition}`;
-                document.getElementById('temp').textContent = `Temp: ${simulatedWeather.tempF}°F`;
-                document.getElementById('humidity').textContent = `Humidity: ${simulatedWeather.humidity}%`;
-                weatherDisplayDiv.style.display = 'block';
-                appStatus.textContent = "Weather data loaded.";
+            function fetchAndDisplayHistoricalWeather() { /* ... remains the same ... */
+                if (!isWeatherWindowLaunched) return;
+                const location = "New York, NY"; const today = new Date(); const historicalDate = new Date(today); historicalDate.setFullYear(1995);
+                const formattedDate = historicalDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                const simulatedWeather = { condition: "Partly Cloudy, Cool", tempF: 50, humidity: 60 };
+                updateWeatherIconUI(simulatedWeather.condition);
+                document.getElementById('location').textContent = location; document.getElementById('weather-date').textContent = formattedDate;
+                document.getElementById('condition').textContent = `Condition: ${simulatedWeather.condition}`; document.getElementById('temp').textContent = `Temp: ${simulatedWeather.tempF}°F`; document.getElementById('humidity').textContent = `Humidity: ${simulatedWeather.humidity}%`;
+                weatherDisplayDiv.style.display = 'block'; weatherAppStatus.textContent = "Weather data loaded.";
             }
 
             // --- Helper to Update Weather Icon UI ---
-            function updateWeatherIconUI(condition) {
-                // (This function remains the same)
-                 let iconSvg = '';
-                const lowerCondition = condition.toLowerCase();
-                 if (lowerCondition.includes("cloudy")) {
-                     iconSvg = `<path d="M41.7 21.3C39.7 15.1 33.5 10 26 10c-7.7 0-14 6.3-14 14 0 .8.1 1.5.2 2.2C6.8 27.2 2 32.3 2 38.5 2 45.4 7.6 51 14.5 51h31C52.9 51 59 45 59 37.5c0-7-5.2-12.7-11.9-13.8C45.4 22.4 43.6 21.3 41.7 21.3z" fill="#F0F0F0" stroke="#888" stroke-width="1.5"/><path d="M51.5 31.5c4.1 0 7.5 3.4 7.5 7.5s-3.4 7.5-7.5 7.5h-31C13.1 46.5 7 40.4 7 33c0-6.2 4.4-11.4 10.2-12.8.5-.1.9-.4 1.1-.9.6-1.2.9-2.5.9-3.8 0-5.5 4.5-10 10-10 5.1 0 9.4 3.8 9.9 8.8.1.7.6 1.2 1.3 1.3 5.2.7 9.1 5.1 9.1 10.4z" fill="#FFF" stroke="#AAA" stroke-width="1" transform="translate(-4, -4) scale(1.1)"/>`;
-                } else if (lowerCondition.includes("sunny") || lowerCondition.includes("clear")) {
-                    iconSvg = `<circle cx="32" cy="32" r="12" fill="#FFD700" stroke="#FFA500" stroke-width="2"/><line x1="32" y1="8" x2="32" y2="14" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="32" y1="50" x2="32" y2="56" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="56" y1="32" x2="50" y2="32" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="14" y1="32" x2="8" y2="32" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="49.5" y1="14.5" x2="45.2" y2="18.8" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="18.8" y1="45.2" x2="14.5" y2="49.5" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="49.5" y1="49.5" x2="45.2" y2="45.2" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="18.8" y1="18.8" x2="14.5" y2="14.5" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>`;
-                } else if (lowerCondition.includes("rain") || lowerCondition.includes("showers")) {
-                     iconSvg = `<path d="M41.7 21.3C39.7 15.1 33.5 10 26 10c-7.7 0-14 6.3-14 14 0 .8.1 1.5.2 2.2C6.8 27.2 2 32.3 2 38.5 2 45.4 7.6 51 14.5 51h31C52.9 51 59 45 59 37.5c0-7-5.2-12.7-11.9-13.8C45.4 22.4 43.6 21.3 41.7 21.3z" fill="#B0C4DE" stroke="#778899" stroke-width="1.5"/> <line x1="20" y1="42" x2="24" y2="52" stroke="#4682B4" stroke-width="2.5" stroke-linecap="round"/> <line x1="30" y1="44" x2="34" y2="54" stroke="#4682B4" stroke-width="2.5" stroke-linecap="round"/> <line x1="40" y1="42" x2="44" y2="52" stroke="#4682B4" stroke-width="2.5" stroke-linecap="round"/>`;
-                }
-                 else {
-                    iconSvg = `<path d="M41.5 21C39.51 14.84 33.27 10 26 10c-7.73 0-14 6.27-14 14 0 .76.07 1.51.21 2.24C6.79 27.2 2 32.28 2 38.5 2 45.4 7.6 51 14.5 51h31C52.95 51 59 44.95 59 37.5c0-6.97-5.16-12.74-11.94-13.75C45.38 22.4 43.6 21.34 41.5 21z" fill="#B0B0B0" stroke="#808080" stroke-width="2"/>`;
-                }
+            function updateWeatherIconUI(condition) { /* ... remains the same ... */
+                 let iconSvg = ''; const lowerCondition = condition.toLowerCase();
+                 if (lowerCondition.includes("cloudy")) iconSvg = `<path d="M41.7 21.3C39.7 15.1 33.5 10 26 10c-7.7 0-14 6.3-14 14 0 .8.1 1.5.2 2.2C6.8 27.2 2 32.3 2 38.5 2 45.4 7.6 51 14.5 51h31C52.9 51 59 45 59 37.5c0-7-5.2-12.7-11.9-13.8C45.4 22.4 43.6 21.3 41.7 21.3z" fill="#F0F0F0" stroke="#888" stroke-width="1.5"/><path d="M51.5 31.5c4.1 0 7.5 3.4 7.5 7.5s-3.4 7.5-7.5 7.5h-31C13.1 46.5 7 40.4 7 33c0-6.2 4.4-11.4 10.2-12.8.5-.1.9-.4 1.1-.9.6-1.2.9-2.5.9-3.8 0-5.5 4.5-10 10-10 5.1 0 9.4 3.8 9.9 8.8.1.7.6 1.2 1.3 1.3 5.2.7 9.1 5.1 9.1 10.4z" fill="#FFF" stroke="#AAA" stroke-width="1" transform="translate(-4, -4) scale(1.1)"/>`;
+                 else if (lowerCondition.includes("sunny") || lowerCondition.includes("clear")) iconSvg = `<circle cx="32" cy="32" r="12" fill="#FFD700" stroke="#FFA500" stroke-width="2"/><line x1="32" y1="8" x2="32" y2="14" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="32" y1="50" x2="32" y2="56" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="56" y1="32" x2="50" y2="32" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="14" y1="32" x2="8" y2="32" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="49.5" y1="14.5" x2="45.2" y2="18.8" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="18.8" y1="45.2" x2="14.5" y2="49.5" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="49.5" y1="49.5" x2="45.2" y2="45.2" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/><line x1="18.8" y1="18.8" x2="14.5" y2="14.5" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>`;
+                 else if (lowerCondition.includes("rain") || lowerCondition.includes("showers")) iconSvg = `<path d="M41.7 21.3C39.7 15.1 33.5 10 26 10c-7.7 0-14 6.3-14 14 0 .8.1 1.5.2 2.2C6.8 27.2 2 32.3 2 38.5 2 45.4 7.6 51 14.5 51h31C52.9 51 59 45 59 37.5c0-7-5.2-12.7-11.9-13.8C45.4 22.4 43.6 21.3 41.7 21.3z" fill="#B0C4DE" stroke="#778899" stroke-width="1.5"/> <line x1="20" y1="42" x2="24" y2="52" stroke="#4682B4" stroke-width="2.5" stroke-linecap="round"/> <line x1="30" y1="44" x2="34" y2="54" stroke="#4682B4" stroke-width="2.5" stroke-linecap="round"/> <line x1="40" y1="42" x2="44" y2="52" stroke="#4682B4" stroke-width="2.5" stroke-linecap="round"/>`;
+                 else iconSvg = `<path d="M41.5 21C39.51 14.84 33.27 10 26 10c-7.73 0-14 6.27-14 14 0 .76.07 1.51.21 2.24C6.79 27.2 2 32.28 2 38.5 2 45.4 7.6 51 14.5 51h31C52.95 51 59 44.95 59 37.5c0-6.97-5.16-12.74-11.94-13.75C45.38 22.4 43.6 21.34 41.5 21z" fill="#B0B0B0" stroke="#808080" stroke-width="2"/>`;
                 weatherConditionIcon.innerHTML = iconSvg;
             }
 
             // --- Audio Handling ---
-            function handleAudioLoad() {
+            function handleAudioLoad(callback) { /* ... remains the same ... */
                  if (dialupAudio.duration && !isNaN(dialupAudio.duration)) {
                     console.log(`Audio loaded. Duration: ${dialupAudio.duration} seconds.`);
-                    dialupAudio.play().catch(e => {
-                         console.error("Audio play failed:", e); displayAudioError("Could not play audio.");
-                         runSimulationSteps(DEFAULT_SIMULATION_TIME);
+                    dialupAudio.play().then(() => { callback(dialupAudio.duration); }).catch(e => {
+                         console.error("Audio play failed:", e); displayAudioError("Could not play audio."); callback(DEFAULT_SIMULATION_TIME);
                     });
-                    runSimulationSteps(dialupAudio.duration);
-                } else {
-                    console.warn("Audio duration not available."); displayAudioError("Could not get audio duration.");
-                    runSimulationSteps(DEFAULT_SIMULATION_TIME);
-                }
+                } else { console.warn("Audio duration not available."); displayAudioError("Could not get audio duration."); callback(DEFAULT_SIMULATION_TIME); }
             }
-             function handleAudioError(e) {
-                console.error("Error loading audio:", e); displayAudioError("Failed to load dial-up sound.");
-                updateConnectionIcon('error'); runSimulationSteps(DEFAULT_SIMULATION_TIME);
+             function handleAudioError(e, callback) { /* ... remains the same ... */
+                console.error("Error loading audio:", e); displayAudioError("Failed to load dial-up sound."); updateConnectionIcon('error'); callback(DEFAULT_SIMULATION_TIME);
              }
-             function displayAudioError(message) {
-                 connectionStatusLine.innerHTML = `<span class="error-notice">${message} Using default timing...</span>`;
-                 appStatus.textContent = "Connection Error";
+             function displayAudioError(message) { /* ... remains the same ... */
+                 connectionStatusLine.innerHTML = `<span class="error-notice">${message} Using default timing...</span>`; weatherAppStatus.textContent = "Connection Error";
              }
-             dialupAudio.addEventListener('error', handleAudioError);
+             dialupAudio.addEventListener('error', (e) => handleAudioError(e, runSimulationSteps));
 
-            // --- Connect Button Action ---
-            connectButton.addEventListener('click', () => {
-                connectContainer.style.display = 'none';
-                win95Window.style.display = 'flex'; // Show the main window
-                connectionStatusLine.textContent = 'Preparing connection...';
-                appStatus.textContent = "Preparing...";
-                windowTitleText.textContent = `Connecting to ${RAS_SERVICE_NAME}...`;
-                updateConnectionIcon('idle');
-                connectedInfoDiv.style.display = 'none';
-                cancelButton.style.display = 'inline-flex';
-                disconnectButton.style.display = 'none';
-                detailsButton.style.display = 'none';
-                weatherDisplayDiv.style.display = 'none'; // Hide weather initially
-
-                if (dialupAudio.readyState >= 1) { handleAudioLoad(); }
-                else {
-                    dialupAudio.addEventListener('loadedmetadata', handleAudioLoad, { once: true });
-                     setTimeout(() => {
-                         if (dialupAudio.readyState < 1) {
-                             dialupAudio.removeEventListener('loadedmetadata', handleAudioLoad);
-                             handleAudioError(new Error("Timeout waiting for metadata"));
-                         }
-                     }, 5000);
+            // --- Launch Weather App Function ---
+            function launchWeatherApp() {
+                if (isWeatherWindowLaunched) { // Prevent relaunch if already open
+                     handleWindowFocus(weatherWindow);
+                     return;
                 }
-            });
+                isWeatherWindowLaunched = true;
+                resetWeatherWindowUI(); // Ensure UI is reset before showing
+                weatherWindow.style.display = 'flex';
+                handleWindowFocus(weatherWindow); // Bring to front and set active
+                weatherAppStatus.textContent = "Preparing...";
+                weatherWindowTitleText.textContent = `Connecting to ${RAS_SERVICE_NAME}...`;
+                updateConnectionIcon('idle');
 
-             // --- Dummy Button Handlers ---
-             cancelButton.addEventListener('click', () => console.log("Cancel clicked"));
-             disconnectButton.addEventListener('click', () => console.log("Disconnect clicked"));
+                // Attempt audio load/play
+                 if (dialupAudio.readyState >= 1) { handleAudioLoad(runSimulationSteps); }
+                 else {
+                     const loadHandler = () => handleAudioLoad(runSimulationSteps);
+                     const errorHandler = (e) => handleAudioError(e, runSimulationSteps);
+                     const timeoutHandler = () => { if (dialupAudio.readyState < 1) { dialupAudio.removeEventListener('loadedmetadata', loadHandler); dialupAudio.removeEventListener('error', errorHandler); handleAudioError(new Error("Timeout waiting for metadata"), runSimulationSteps); } };
+                     dialupAudio.addEventListener('loadedmetadata', loadHandler, { once: true });
+                     dialupAudio.addEventListener('error', errorHandler, { once: true });
+                     setTimeout(timeoutHandler, 5000);
+                 }
+            }
+
+             // --- Add Event Listeners for Weather Window ---
+             weatherTitleBar.addEventListener('mousedown', handleDragMouseDown);
+             weatherCloseButton.addEventListener('click', handleWindowClose);
+             weatherWindow.addEventListener('mousedown', () => handleWindowFocus(weatherWindow), true);
+
+             // --- Dummy Button Handlers (Weather Window) ---
+             cancelButton.addEventListener('click', () => { console.log("Cancel clicked"); handleWindowClose({ target: cancelButton }); }); // Make Cancel close the window
+             disconnectButton.addEventListener('click', () => { console.log("Disconnect clicked"); if (durationInterval) clearInterval(durationInterval); updateConnectionIcon('idle'); weatherWindowTitleText.textContent = "WeatherNET 95 - Idle"; weatherAppStatus.textContent = "Disconnected"; });
              detailsButton.addEventListener('click', () => console.log("Details clicked"));
 
              // --- Initialize Clock ---
-             updateClock(); // Initial call
-             clockInterval = setInterval(updateClock, 1000); // Update every second
+             updateClock();
+             clockInterval = setInterval(updateClock, 1000);
 
         });
     </script>
